@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 from enum import Enum
 from random import choice
 from sys import stdin
-from typing import Dict, Generator, Iterator, List
+from typing import Dict, Iterator, List
 
 
 class Flags(Enum):
@@ -101,13 +101,19 @@ def right_pad(lines: List[str]) -> Iterator[str]:
         yield line + " " * dif
 
 
+def colourize(palette: Palette, lines: Iterator[str]) -> Iterator[str]:
+    yield from lines
+
+
 def main() -> None:
     args = parse_args()
     lines = stdin.read().splitlines()
     padded = right_pad(lines)
-    for p in padded:
-        print(p)
-    print(args)
+    palette = FLAG_PALETTE[args.flag]
+    # bg = BACKGROUND_PALETTE[args.background]
+    new_lines = colourize(palette, padded)
+    pretty = "\n".join(new_lines)
+    print(pretty, end="")
 
 
 try:
