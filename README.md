@@ -2,8 +2,6 @@
 
 # GAY 🌈
 
-Pure Bash Pride
-
 Gayer version of [`lolcat`](https://github.com/busyloop/lolcat)
 
 ## Big Gay
