@@ -10,6 +10,7 @@ LONG_OPTS='help,light,dark,les,lesbian,gay,bi,bisexual,trans,transgender,ace,ase
 PARSED="$(getopt --options="$OPTS", --longoptions="$LONG_OPTS" --name="$0" -- "$@")"
 eval set -- "$PARSED"
 
+
 HELP=0
 LIGHT=0
 DARK=0
@@ -22,8 +23,6 @@ ACE=0
 PAN=0
 ENBY=0
 STRAIGHT=0
-
-
 
 
 while true
@@ -136,6 +135,9 @@ C_ACE=()
 C_PAN=()
 C_ENBY=()
 
+C_BG_LIGHT=
+C_BG_DARK=
+
 
 if [[ $LES -eq 1 ]]
 then
@@ -163,3 +165,10 @@ else
   OPT=${OPTS[$((RANDOM % ${#OPTS[@]}))]}
   exec "$0" "$OPT" "$@"
 fi
+
+
+pprint() {
+  local text="$1"
+  local colour="$2"
+  printf '%s%d%s%s%s' '\e[0;' "$colour" 'm' "$text" '\e[0m'
+}
