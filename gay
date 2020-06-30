@@ -6,6 +6,7 @@ set -o pipefail
 
 OPTS='hlgbtapes'
 LONG_OPTS='help,light,dark,les,lesbian,gay,bi,bisexual,trans,transgender,ace,asexual,pan,pansexual,enby,straight'
+FLAGS=(-l -g -b -t -a -p -e)
 
 PARSED="$(getopt --options="$OPTS", --longoptions="$LONG_OPTS" --name="$0" -- "$@")"
 eval set -- "$PARSED"
@@ -161,9 +162,8 @@ elif [[ $ENBY -eq 1 ]]
 then
   COLOURS=("${C_ENBY[@]}")
 else
-  OPTS=(-l -g -b -t -a -p -e)
-  OPT=${OPTS[$((RANDOM % ${#OPTS[@]}))]}
-  exec "$0" "$OPT" "$@"
+  FLAG=${FLAGS[$((RANDOM % ${#FLAGS[@]}))]}
+  exec "$0" "$FLAG" "$@"
 fi
 
 
