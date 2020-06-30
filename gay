@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 from enum import Enum
 from random import choice
 from sys import stdin
-from typing import Dict, Iterator, List
+from typing import Dict, Iterator, List, Optional
 
 
 class Flags(Enum):
@@ -39,10 +39,10 @@ FLAG_PALETTE: Dict[Flags, Palette] = {
 }
 
 
-BACKGROUND_PALETTE: Dict[Background, Colour] = {
-    Background.NONE: 0,
-    Background.LIGHT: 0,
-    Background.DARK: 0,
+BACKGROUND_PALETTE: Dict[Background, Optional[Colour]] = {
+    Background.NONE: None,
+    Background.LIGHT: "#FAFAFA",
+    Background.DARK: "#606060",
 }
 
 
