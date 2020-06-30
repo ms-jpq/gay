@@ -86,13 +86,8 @@ done
 
 
 HELP_TEXT="$(tee <<- EOF
-LGBTQ2A+ flags:
-
-echo 'TEXT' | gay
-
-options:
---light
---dark
+usage:
+$ echo 'TEXT' | gay
 
 flags:
 -l  --les      --lesbian
@@ -103,6 +98,10 @@ flags:
 -p  --pan      --pansexual
 -e  --enby
 -s  --straight
+
+backgrounds:
+  --light
+  --dark
 EOF
 )"
 
