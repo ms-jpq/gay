@@ -107,4 +107,16 @@ else
 fi
 
 
-echo -n "$TEXT"
+if [[ $STRAIGHT -eq 1 ]]
+then
+  printf '%s\n' "$TEXT"
+fi
+
+
+C_GAY=()
+C_LES=()
+C_BI=()
+C_TRANS=()
+C_ACE=()
+C_PAN=()
+C_ENBY=()
