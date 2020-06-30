@@ -24,18 +24,18 @@ class Background(Enum):
     DARK = 3
 
 
-Colour = int
-Palette = List[int]
+Colour = str
+Palette = List[str]
 
 
 FLAG_PALETTE: Dict[Flags, Palette] = {
-    Flags.LES: [],
-    Flags.GAY: [],
-    Flags.BI: [],
-    Flags.TRANS: [],
-    Flags.ACE: [],
-    Flags.PAN: [],
-    Flags.ENBY: [],
+    Flags.LES: ["#D62E02", "#FD9855", "#FFFFFF", "#D161A2", "#A20160"],
+    Flags.GAY: ["#FF0018", "#FFA52C", "#FFFF41", "#008018", "#0000F9", "#86007D"],
+    Flags.BI: ["#D60270", " #9B4F96", "#0038A8"],
+    Flags.TRANS: ["#55CDFC", "#F7A8B8", "#FFFFFF", "#F7A8B8", "#55CDFC"],
+    Flags.ACE: ["#000000", "#A4A4A4", "#FFFFFF", "#810081"],
+    Flags.PAN: ["#FF1B8D", " #FFDA00", "#1BB3FF"],
+    Flags.ENBY: ["#FFF430", "#FFFFFF", "#9C59D1", "#000000"],
 }
 
 
