@@ -163,7 +163,7 @@ then
   COLOURS=("${C_ENBY[@]}")
 else
   FLAG=${FLAGS[$((RANDOM % ${#FLAGS[@]}))]}
-  exec "$0" "$FLAG" "$@"
+  exec "$0" "$FLAG" "$@" <<< "$TEXT"
 fi
 
 
@@ -174,7 +174,11 @@ pprint() {
 }
 
 
+OUT=''
 for ((i=0; i<${#TEXT}; i++))
 do
-  echo -n "${TEXT:$i:1}"
+  OUT="${OUT}${TEXT:$i:1}"
 done
+
+
+echo -n "$OUT"
