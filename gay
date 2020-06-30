@@ -13,8 +13,8 @@ eval set -- "$PARSED"
 
 
 HELP=0
-LIGHT=0
-DARK=0
+BG_LIGHT=0
+BG_DARK=0
 
 LES=0
 GAY=0
@@ -34,11 +34,11 @@ do
       shift
       ;;
     --light)
-      LIGHT=1
+      BG_LIGHT=1
       shift
       ;;
     --dark)
-      DARK=1
+      BG_DARK=1
       shift
       ;;
     -l|--les|--lesbian)
@@ -174,11 +174,32 @@ pprint() {
 }
 
 
-OUT=''
-for ((i=0; i<${#TEXT}; i++))
+readarray -t LINES <<< "$TEXT"
+MAX_LEN=0
+for line in "${LINES[@]}"
 do
-  OUT="${OUT}${TEXT:$i:1}"
+  len=${#line}
+  if [[ $len -gt $MAX_LEN ]]
+  then
+    MAX_LEN=$len
+  fi
 done
 
 
-echo -n "$OUT"
+OUT=''
+for line in "${LINES[@]}"
+do
+  len=${#line}
+  for ((i=0; i<=len; i++))
+  do
+    if [[ $i -eq $len ]]
+    then
+      OUT="${OUT}"$'\n'
+    else
+      OUT="${OUT}${line:$i:1}"
+    fi
+  done
+done
+
+
+printf '%s' "$OUT"
