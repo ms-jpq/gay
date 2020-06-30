@@ -1,2 +1,116 @@
 #!/usr/bin/env python3
 
+
+from argparse import ArgumentParser, Namespace
+from enum import Enum
+from random import choice
+from sys import stdin
+from typing import Dict, Generator, Iterator, List
+
+
+class Flags(Enum):
+    LES = 1
+    GAY = 2
+    BI = 3
+    TRANS = 4
+    ACE = 5
+    PAN = 6
+    ENBY = 7
+
+
+class Background(Enum):
+    NONE = 1
+    LIGHT = 2
+    DARK = 3
+
+
+Colour = int
+Palette = List[int]
+
+
+FLAG_PALETTE: Dict[Flags, Palette] = {
+    Flags.LES: [],
+    Flags.GAY: [],
+    Flags.BI: [],
+    Flags.TRANS: [],
+    Flags.ACE: [],
+    Flags.PAN: [],
+    Flags.ENBY: [],
+}
+
+
+BACKGROUND_PALETTE: Dict[Background, Colour] = {
+    Background.NONE: 0,
+    Background.LIGHT: 0,
+    Background.DARK: 0,
+}
+
+
+def parse_args() -> Namespace:
+    rand_flag = choice([f for f in Flags])
+    namespace = Namespace(flag=rand_flag, background=Background.NONE)
+
+    parser = ArgumentParser()
+    parser.add_argument("--raw", action="store_true")
+
+    parser.add_argument(
+        "-l", "--les", "--lesbian", action="store_const", dest="flag", const=Flags.LES,
+    )
+    parser.add_argument(
+        "-g", "--gay", action="store_const", dest="flag", const=Flags.GAY,
+    )
+    parser.add_argument(
+        "-b", "--bi", "--bisexual", action="store_const", dest="flag", const=Flags.BI,
+    )
+    parser.add_argument(
+        "-t",
+        "--trans",
+        "--transgender",
+        action="store_const",
+        dest="flag",
+        const=Flags.TRANS,
+    )
+    parser.add_argument(
+        "-a", "--ace", "--asexual", action="store_const", dest="flag", const=Flags.ACE,
+    )
+    parser.add_argument(
+        "-p",
+        "--pan",
+        "--pansexual",
+        action="store_const",
+        dest="flag",
+        const=Flags.PAN,
+    )
+    parser.add_argument(
+        "-e", "--enby", action="store_const", dest="flag", const=Flags.ENBY,
+    )
+    parser.add_argument(
+        "--light", action="store_const", dest="background", const=Background.LIGHT
+    )
+    parser.add_argument(
+        "--dark", action="store_const", dest="background", const=Background.DARK
+    )
+
+    return parser.parse_args(namespace=namespace)
+
+
+def right_pad(lines: List[str]) -> Iterator[str]:
+    max_len = max(map(len, lines))
+    for line in lines:
+        dif = max_len - len(line)
+        yield line + " " * dif
+
+
+def main() -> None:
+    args = parse_args()
+    lines = stdin.read().splitlines()
+    padded = right_pad(lines)
+    for p in padded:
+        print(p)
+    print(args)
+
+
+try:
+    main()
+except KeyboardInterrupt:
+    pass
