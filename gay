@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+
+set -eu
+set -o pipefail
+
+
+OPTS='lgbtaps'
+LONG_OPTS='les,gay,trans,ace,pan,straight'
+
+PARSED="$(getopt --options="$OPTS", --longoptions="$LONG_OPTS" --name="$0" -- "$@")"
+eval set -- "$PARSED"
+
+
+echo -n "$@"
