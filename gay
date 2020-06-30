@@ -189,19 +189,11 @@ done
 OUT=''
 for line in "${LINES[@]}"
 do
-  len=${#line}
-  for ((i=0; i<=MAX_LEN; i++))
+  for ((i=0; i<=${#line}; i++))
   do
-    if [[ $i -eq $MAX_LEN ]]
-    then
-      OUT="${OUT}"$'\n'
-    elif [[ $i -ge $len ]]
-    then
-      OUT="${OUT} "
-    else
-      OUT="${OUT}${line:$i:1}"
-    fi
+    OUT="${OUT}${line:$i:1}"
   done
+  OUT="${OUT}"$'\n'
 done
 
 
