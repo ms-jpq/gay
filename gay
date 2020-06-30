@@ -5,11 +5,106 @@ set -eu
 set -o pipefail
 
 
-OPTS='lgbtaps'
-LONG_OPTS='les,gay,trans,ace,pan,straight'
+OPTS='hlgbtapes'
+LONG_OPTS='help,les,lesbian,gay,bi,bisexual,trans,transgender,ace,asexual,pan,pansexual,enby,straight'
 
 PARSED="$(getopt --options="$OPTS", --longoptions="$LONG_OPTS" --name="$0" -- "$@")"
 eval set -- "$PARSED"
 
+HELP=0
+LES=0
+GAY=0
+TRANS=0
+ACE=0
+PAN=0
+ENBY=0
+STRAIGHT=0
 
-echo -n "$@"
+
+while true
+do
+  case "$1" in
+    -h|--help)
+      HELP=1
+      shift
+      ;;
+    -l|--les|--lesbian)
+      LES=1
+      shift
+      ;;
+    -g|--gay)
+      GAY=1
+      shift
+      ;;
+    -b|--bi|--bisexual)
+      BI=1
+      shift
+      ;;
+    -t|--trans|--transgender)
+      TRANS=1
+      shift
+      ;;
+    -a|--ace|--asexual)
+      ACE=1
+      shift
+      ;;
+    -p|--pan|--pansexual)
+      PAN=1
+      shift
+      ;;
+    -e|--enby)
+      ENBY=1
+      shift
+      ;;
+    -s|--straight)
+      STRAIGHT=1
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      >&2 printf '!ERR!\n'
+      exit 2
+      ;;
+  esac
+done
+
+
+
+HELP_TEXT="$(
+tee <<- EOF
+LGBTQ2A+ flags:
+
+echo 'TEXT' | gay
+
+options:
+-l  --les      --lesbian
+-g  --gay
+-b  --bi       --bisexual
+-t  --trans    --transgender
+-a  --ace      --asexual
+-p  --pan      --pansexual
+-e  --enby
+-s  --straight
+EOF
+)"
+
+
+if [[ $HELP -eq 1 ]]
+then
+  printf '%s\n' "$HELP_TEXT"
+  exit 0
+fi
+
+
+if [[ $# -eq 0 ]]
+then
+  TEXT="$(< /dev/stdin)"
+else
+  TEXT="$*"
+fi
+
+
+echo -n "$TEXT"
