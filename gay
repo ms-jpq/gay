@@ -14,6 +14,7 @@ eval set -- "$PARSED"
 HELP=0
 LES=0
 GAY=0
+BI=0
 TRANS=0
 ACE=0
 PAN=0
@@ -65,7 +66,7 @@ do
       break
       ;;
     *)
-      >&2 printf '!ERR!\n'
+      >&2 printf '%s\n' '!ERR!'
       exit 2
       ;;
   esac
@@ -113,10 +114,38 @@ then
 fi
 
 
-C_GAY=()
 C_LES=()
+C_GAY=()
 C_BI=()
 C_TRANS=()
 C_ACE=()
 C_PAN=()
 C_ENBY=()
+
+
+if [[ $LES -eq 1 ]]
+then
+  COLOURS="${C_LES[@]}"
+elif [[ $GAY -eq 1  ]]
+then
+  COLOURS="${C_LES[@]}"
+elif [[ $BI -eq 1  ]]
+then
+  COLOURS="${C_LES[@]}"
+elif [[ $TRANS -eq 1  ]]
+then
+  COLOURS="${C_LES[@]}"
+elif [[ $ACE -eq 1  ]]
+then
+  COLOURS="${C_LES[@]}"
+elif [[ $PAN -eq 1  ]]
+then
+  COLOURS="${C_LES[@]}"
+elif [[ $ENBY -eq 1  ]]
+then
+  COLOURS="${C_LES[@]}"
+else
+  OPTS=(-l -g -b -t -a -p -e)
+  OPT=${OPTS[$((RANDOM % ${#OPTS[@]}))]}
+  exec "$0" "$OPT" "$@"
+fi
