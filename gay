@@ -5,12 +5,15 @@ set -o pipefail
 
 
 OPTS='hlgbtapes'
-LONG_OPTS='help,les,lesbian,gay,bi,bisexual,trans,transgender,ace,asexual,pan,pansexual,enby,straight'
+LONG_OPTS='help,light,dark,les,lesbian,gay,bi,bisexual,trans,transgender,ace,asexual,pan,pansexual,enby,straight'
 
 PARSED="$(getopt --options="$OPTS", --longoptions="$LONG_OPTS" --name="$0" -- "$@")"
 eval set -- "$PARSED"
 
 HELP=0
+LIGHT=0
+DARK=0
+
 LES=0
 GAY=0
 BI=0
@@ -21,11 +24,21 @@ ENBY=0
 STRAIGHT=0
 
 
+
+
 while true
 do
   case "$1" in
     -h|--help)
       HELP=1
+      shift
+      ;;
+    --light)
+      LIGHT=1
+      shift
+      ;;
+    --dark)
+      DARK=1
       shift
       ;;
     -l|--les|--lesbian)
@@ -72,13 +85,16 @@ do
 done
 
 
-HELP_TEXT="$(
-tee <<- EOF
+HELP_TEXT="$(tee <<- EOF
 LGBTQ2A+ flags:
 
 echo 'TEXT' | gay
 
 options:
+--light
+--dark
+
+flags:
 -l  --les      --lesbian
 -g  --gay
 -b  --bi       --bisexual
