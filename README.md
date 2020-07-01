@@ -4,7 +4,7 @@ Colour your text / terminal to be more gay.
 
 Gayer version of [`lolcat`](https://github.com/busyloop/lolcat)
 
-## Get Gay
+## [Get Gay](https://pypi.org/project/gay)
 
 `pip install gay`
 
