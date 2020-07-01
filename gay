@@ -9,7 +9,7 @@ from math import pi, sin
 from random import choice, randint
 from shutil import get_terminal_size
 from sys import stdin
-from typing import Callable, Dict, Iterator, List, Optional, Tuple, cast
+from typing import Callable, Dict, Iterator, List, Tuple, cast
 
 
 class ColourSpace(Enum):
