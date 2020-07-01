@@ -10,6 +10,8 @@ Gayer version of [`lolcat`](https://github.com/busyloop/lolcat)
 
 ## Show me
 
+### Text
+
 ```sh
 echo 'message' | gay
 ```
@@ -19,6 +21,8 @@ echo 'message' | gay
 ![dog.png](https://raw.githubusercontent.com/ms-jpq/gay/%3C3/preview/dog.png)
 
 ![anthem.png](https://raw.githubusercontent.com/ms-jpq/gay/%3C3/preview/anthem.png)
+
+### Flag
 
 ```sh
 gay --flag
