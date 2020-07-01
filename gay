@@ -254,8 +254,8 @@ def colourize(
 
 def main() -> None:
     signal(SIGPIPE, SIG_DFL)
-    register(on_exit)
     args = parse_args()
+    register(on_exit)
     colour_space = ColourSpace(args.colour)
     spec = FLAG_SPECS[args.flag]
 
