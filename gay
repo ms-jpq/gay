@@ -69,10 +69,10 @@ FLAG_SPECS: Dict[Flags, FlagSpec] = {
         ],
     ),
     Flags.BI: FlagSpec(
-        aspect_ratio=(3, 4), palette=[("#D60270", 1), ("#9B4F96", 1), ("#0038A8", 1)],
+        aspect_ratio=(3, 5), palette=[("#D60270", 2), ("#9B4F96", 1), ("#0038A8", 2)],
     ),
     Flags.TRANS: FlagSpec(
-        aspect_ratio=(3, 4),
+        aspect_ratio=(1, 2),
         palette=[
             ("#55CDFC", 1),
             ("#F7A8B8", 1),
@@ -116,6 +116,8 @@ def parse_args() -> Namespace:
         choices=[c.value for c in ColourSpace],
         default=ColourSpace.TRUE.value,
     )
+
+    parser.add_argument("-f", "--flag", dest="flag_only", action="store_true")
 
     parser.add_argument(
         "-l", "--les", "--lesbian", action="store_const", dest="flag", const=Flags.LES,
@@ -229,6 +231,10 @@ def decor_for(space: ColourSpace) -> Tuple[str, str, Callable[[RGB], str]]:
         raise ValueError()
 
 
+def paint_flag(colour_space: ColourSpace) -> Iterator[str]:
+    yield ""
+
+
 def colourize(
     colour_space: ColourSpace,
     bg: Optional[RGB],
@@ -253,29 +259,28 @@ def colourize(
 
 def main() -> None:
     args = parse_args()
-    data = stdin.read()
-
-    if args.straight:
-        print(data, end="")
-        return
-
-    lines = data.splitlines()
-    padded = right_pad(lines)
-
     colour_space = ColourSpace(args.colour)
-    background = Background(args.background)
-    palette = flag_colours(FLAG_SPECS[args.flag])
-    raw_bg = BACKGROUND_PALETTE[background]
-    bg = parse_colour(raw_bg) if raw_bg else None
 
-    new_lines = colourize(
-        colour_space=colour_space,
-        bg=bg,
-        colour_gen=rgb_gen(palette, args.period),
-        lines=padded,
-    )
-    pretty = "".join(new_lines)
-    print(pretty, end="")
+    if args.flag_only:
+        flag_stripes = colourize(colour_space=colour_space,)
+        print(*flag_stripes, sep="", end="")
+    else:
+        data = stdin.read()
+        lines = data.splitlines()
+        padded = right_pad(lines)
+
+        background = Background(args.background)
+        palette = flag_colours(FLAG_SPECS[args.flag])
+        raw_bg = BACKGROUND_PALETTE[background]
+        bg = parse_colour(raw_bg) if raw_bg else None
+
+        new_lines = colourize(
+            colour_space=colour_space,
+            bg=bg,
+            colour_gen=rgb_gen(palette, args.period),
+            lines=padded,
+        )
+        print(*new_lines, sep="", end="")
 
 
 try:
