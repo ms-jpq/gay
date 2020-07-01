@@ -3,11 +3,11 @@ name: Release
 
 on:
   push:
-    # tags:
-    #   - "*"
+    tags:
+      - "*"
 
 jobs:
-  build_macos:
+  release:
     runs-on: ubuntu-latest
 
     steps:
