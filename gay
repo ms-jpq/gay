@@ -3,7 +3,7 @@
 
 from argparse import ArgumentParser, Namespace
 from enum import Enum
-from itertools import chain, cycle, islice
+from itertools import cycle, islice
 from math import pi, sin
 from random import choice, randint
 from sys import stdin
@@ -175,11 +175,11 @@ def colourize(
     lines: Iterator[str],
 ) -> Iterator[str]:
     fg_esc, bg_esc, decor = decor_for(colour_space)
-    if bg:
-        yield bg_esc
-        yield decor(bg)
-        yield "m"
     for line in lines:
+        if bg:
+            yield bg_esc
+            yield decor(bg)
+            yield "m"
         for char in line:
             colour = next(colour_gen)
             yield fg_esc
