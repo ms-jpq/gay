@@ -7,6 +7,7 @@ from enum import Enum
 from itertools import cycle, islice
 from math import pi, sin
 from random import choice, randint
+from shutil import get_terminal_size
 from sys import stdin
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, cast
 
@@ -231,16 +232,32 @@ def decor_for(space: ColourSpace) -> Tuple[str, str, Callable[[RGB], str]]:
         raise ValueError()
 
 
-def paint_flag(colour_space: ColourSpace) -> Iterator[str]:
-    yield ""
+def paint_flag(colour_space: ColourSpace, spec: FlagSpec) -> Iterator[str]:
+    cols, _ = get_terminal_size((80, -1))
+    _, bg_esc, decor = decor_for(colour_space)
+    line = " " * cols
+    for hexc, l in spec.palette:
+        colour = parse_colour(hexc)
+        code = decor(colour)
+        for _ in range(0, l):
+            yield bg_esc
+            yield line
+            yield code
+            yield "m"
+            yield "\n"
+    yield "\033[0m"
+    yield "\n"
 
 
 def colourize(
     colour_space: ColourSpace,
+    spec: FlagSpec,
     bg: Optional[RGB],
-    colour_gen: Iterator[RGB],
+    period: int,
     lines: Iterator[str],
 ) -> Iterator[str]:
+    palette = flag_colours(spec)
+    colour_gen = rgb_gen(palette, period)
     fg_esc, bg_esc, decor = decor_for(colour_space)
     for line in lines:
         if bg:
@@ -260,9 +277,10 @@ def colourize(
 def main() -> None:
     args = parse_args()
     colour_space = ColourSpace(args.colour)
+    spec = FLAG_SPECS[args.flag]
 
     if args.flag_only:
-        flag_stripes = colourize(colour_space=colour_space,)
+        flag_stripes = paint_flag(colour_space=colour_space, spec=spec)
         print(*flag_stripes, sep="", end="")
     else:
         data = stdin.read()
@@ -270,14 +288,14 @@ def main() -> None:
         padded = right_pad(lines)
 
         background = Background(args.background)
-        palette = flag_colours(FLAG_SPECS[args.flag])
         raw_bg = BACKGROUND_PALETTE[background]
         bg = parse_colour(raw_bg) if raw_bg else None
 
         new_lines = colourize(
             colour_space=colour_space,
+            spec=spec,
             bg=bg,
-            colour_gen=rgb_gen(palette, args.period),
+            period=args.period,
             lines=padded,
         )
         print(*new_lines, sep="", end="")
