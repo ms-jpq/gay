@@ -14,6 +14,8 @@ echo 'message' | gay
 
 ![dog.png](https://raw.githubusercontent.com/ms-jpq/gay/%3C3/preview/dog.png)
 
+![anthem.png](https://raw.githubusercontent.com/ms-jpq/gay/%3C3/preview/anthem.png)
+
 ```sh
 gay --flag
 ```
