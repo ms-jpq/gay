@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 from atexit import register
 from dataclasses import dataclass
 from enum import Enum
-from itertools import chain, cycle, islice, repeat
+from itertools import cycle, islice
 from math import pi, sin
 from os import environ
 from random import choice, randint
