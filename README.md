@@ -16,6 +16,8 @@ echo 'message' | gay
 gay --flag
 ```
 
+Unlike the demo, it shows 1 flag and 1 flag only.
+
 ![flags.gif](https://raw.githubusercontent.com/ms-jpq/gay/%3C3/preview/flags.gif)
 
 ## Get Gay
