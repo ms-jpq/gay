@@ -2,6 +2,7 @@
 
 
 from argparse import ArgumentParser, Namespace
+from atexit import register
 from dataclasses import dataclass
 from enum import Enum
 from itertools import chain, cycle, islice, repeat
@@ -9,6 +10,7 @@ from math import pi, sin
 from os import environ
 from random import choice, randint
 from shutil import get_terminal_size
+from signal import SIG_DFL, SIGPIPE, signal
 from sys import stdin
 from typing import Callable, Dict, Iterator, List, Tuple, cast
 
@@ -91,6 +93,10 @@ FLAG_SPECS: Dict[Flags, FlagSpec] = {
         aspect_ratio=(3, 5), palette=[("#B77FDD", 1), ("#FFFFFF", 1), ("#48821E", 1)]
     ),
 }
+
+
+def on_exit() -> None:
+    print("\033[0m", end="", flush=True)
 
 
 def parse_args() -> Namespace:
@@ -226,7 +232,6 @@ def paint_flag(colour_space: ColourSpace, spec: FlagSpec) -> Iterator[str]:
             yield from esc_codes
             yield "m"
             yield line
-            yield "\033[0m"
             yield "\n"
 
 
@@ -243,11 +248,12 @@ def colourize(
             yield from decor(colour)
             yield "m"
             yield char
-        yield "\033[0m"
         yield "\n"
 
 
 def main() -> None:
+    signal(SIGPIPE, SIG_DFL)
+    register(on_exit)
     args = parse_args()
     colour_space = ColourSpace(args.colour)
     spec = FLAG_SPECS[args.flag]
@@ -268,4 +274,4 @@ def main() -> None:
 try:
     main()
 except KeyboardInterrupt:
-    pass
+    exit(130)
