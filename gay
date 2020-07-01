@@ -28,13 +28,6 @@ class Flags(Enum):
     GQ = 8
 
 
-class Background(Enum):
-    NONE = "none"
-    LIGHT = "light"
-    AVG = "average"
-    DARK = "dark"
-
-
 HexColour = str
 RGB = Tuple[int, int, int]
 RawPalette = List[Tuple[HexColour, int]]
@@ -98,13 +91,6 @@ FLAG_SPECS: Dict[Flags, FlagSpec] = {
     ),
 }
 
-BACKGROUND_PALETTE: Dict[Background, Optional[HexColour]] = {
-    Background.NONE: None,
-    Background.LIGHT: "#FAFAFA",
-    Background.AVG: "#E2E2E2",
-    Background.DARK: "#4F4F4F",
-}
-
 
 def parse_args() -> Namespace:
     rand_flag = choice([f for f in Flags])
@@ -155,17 +141,7 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "--gq", "--gender-queer", action="store_const", dest="flag", const=Flags.GQ,
     )
-    parser.add_argument("-s", "--straight", action="store_true")
-
     parser.add_argument("--period", type=int, default=randint(3, 9))
-
-    parser.add_argument(
-        "--bg",
-        "--background",
-        dest="background",
-        choices=[b.value for b in Background],
-        default=Background.NONE.value,
-    )
 
     return parser.parse_args(namespace=namespace)
 
@@ -250,18 +226,13 @@ def paint_flag(colour_space: ColourSpace, spec: FlagSpec) -> Iterator[str]:
 def colourize(
     colour_space: ColourSpace,
     spec: FlagSpec,
-    bg: Optional[RGB],
     period: int,
     lines: Iterator[str],
 ) -> Iterator[str]:
     palette = flag_colours(spec)
     colour_gen = rgb_gen(palette, period)
-    fg_esc, bg_esc, decor = decor_for(colour_space)
+    fg_esc, _, decor = decor_for(colour_space)
     for line in lines:
-        if bg:
-            yield bg_esc
-            yield decor(bg)
-            yield "m"
         for char in line:
             colour = next(colour_gen)
             yield fg_esc
@@ -284,16 +255,8 @@ def main() -> None:
         data = stdin.read()
         lines = data.splitlines()
 
-        background = Background(args.background)
-        raw_bg = BACKGROUND_PALETTE[background]
-        bg = parse_colour(raw_bg) if raw_bg else None
-
         new_lines = colourize(
-            colour_space=colour_space,
-            spec=spec,
-            bg=bg,
-            period=args.period,
-            lines=lines,
+            colour_space=colour_space, spec=spec, period=args.period, lines=iter(lines),
         )
         print(*new_lines, sep="", end="")
 
