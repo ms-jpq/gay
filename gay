@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from enum import Enum
 from itertools import chain, cycle, islice, repeat
 from math import pi, sin
+from os import environ
 from random import choice, randint
 from shutil import get_terminal_size
 from sys import stdin
@@ -94,15 +95,19 @@ FLAG_SPECS: Dict[Flags, FlagSpec] = {
 
 def parse_args() -> Namespace:
     rand_flag = choice([f for f in Flags])
+    colour_space = (
+        ColourSpace.TRUE
+        if environ.get("COLORTERM") in {"truecolor", "24bit"}
+        else ColourSpace.EIGHT
+    )
     namespace = Namespace(flag=rand_flag)
-
     parser = ArgumentParser()
 
     parser.add_argument(
         "-c",
         "--colour",
         choices=[c.value for c in ColourSpace],
-        default=ColourSpace.TRUE.value,
+        default=colour_space.value,
     )
 
     parser.add_argument("-f", "--flag", dest="flag_only", action="store_true")
