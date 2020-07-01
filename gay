@@ -285,7 +285,6 @@ def main() -> None:
 
     if args.flag_only:
         flag_stripes = paint_flag(colour_space=colour_space, spec=spec)
-        # [*flag_stripes]
         print(*flag_stripes, sep="", end="")
     else:
         data = stdin.read()
