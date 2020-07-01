@@ -232,6 +232,7 @@ def paint_flag(colour_space: ColourSpace, spec: FlagSpec) -> Iterator[str]:
             yield from esc_codes
             yield "m"
             yield line
+            yield "\033[0m"
             yield "\n"
 
 
@@ -248,6 +249,7 @@ def colourize(
             yield from decor(colour)
             yield "m"
             yield char
+        yield "\033[0m"
         yield "\n"
 
 
