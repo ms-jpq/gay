@@ -6,6 +6,16 @@ Gayer version of [`lolcat`](https://github.com/busyloop/lolcat)
 
 ## Show me
 
+```sh
+echo 'message' | gay
+```
+
+![help.gif](https://raw.githubusercontent.com/ms-jpq/gay/%3C3/preview/help.gif)
+
+```sh
+gay --flag
+```
+
 ![flags.gif](https://raw.githubusercontent.com/ms-jpq/gay/%3C3/preview/flags.gif)
 
 ## Get Gay
