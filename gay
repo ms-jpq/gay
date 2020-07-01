@@ -49,7 +49,7 @@ class FlagSpec:
 
 FLAG_SPECS: Dict[Flags, FlagSpec] = {
     Flags.LES: FlagSpec(
-        aspect_ratio=(3, 4),
+        aspect_ratio=(3, 5),
         palette=[
             ("#D62E02", 1),
             ("#FD9855", 1),
@@ -59,7 +59,7 @@ FLAG_SPECS: Dict[Flags, FlagSpec] = {
         ],
     ),
     Flags.GAY: FlagSpec(
-        aspect_ratio=(3, 4),
+        aspect_ratio=(3, 5),
         palette=[
             ("#FF0018", 1),
             ("#FFA52C", 1),
@@ -73,7 +73,7 @@ FLAG_SPECS: Dict[Flags, FlagSpec] = {
         aspect_ratio=(3, 5), palette=[("#D60270", 2), ("#9B4F96", 1), ("#0038A8", 2)],
     ),
     Flags.TRANS: FlagSpec(
-        aspect_ratio=(1, 2),
+        aspect_ratio=(3, 5),
         palette=[
             ("#55CDFC", 1),
             ("#F7A8B8", 1),
@@ -83,18 +83,18 @@ FLAG_SPECS: Dict[Flags, FlagSpec] = {
         ],
     ),
     Flags.ACE: FlagSpec(
-        aspect_ratio=(3, 4),
+        aspect_ratio=(3, 5),
         palette=[("#000000", 1), ("#A4A4A4", 1), ("#FFFFFF", 1), ("#810081", 1)],
     ),
     Flags.PAN: FlagSpec(
-        aspect_ratio=(3, 4), palette=[("#FF1B8D", 1), ("#FFDA00", 1), ("#1BB3FF", 1)],
+        aspect_ratio=(3, 5), palette=[("#FF1B8D", 1), ("#FFDA00", 1), ("#1BB3FF", 1)],
     ),
     Flags.NB: FlagSpec(
-        aspect_ratio=(3, 4),
+        aspect_ratio=(3, 5),
         palette=[("#FFF430", 1), ("#FFFFFF", 1), ("#9C59D1", 1), ("#000000", 1)],
     ),
     Flags.GQ: FlagSpec(
-        aspect_ratio=(3, 4), palette=[("#B77FDD", 1), ("#FFFFFF", 1), ("#48821E", 1)]
+        aspect_ratio=(3, 5), palette=[("#B77FDD", 1), ("#FFFFFF", 1), ("#48821E", 1)]
     ),
 }
 
@@ -113,6 +113,7 @@ def parse_args() -> Namespace:
     parser = ArgumentParser()
 
     parser.add_argument(
+        "-c",
         "--colour",
         choices=[c.value for c in ColourSpace],
         default=ColourSpace.TRUE.value,
@@ -233,13 +234,17 @@ def decor_for(space: ColourSpace) -> Tuple[str, str, Callable[[RGB], str]]:
 
 
 def paint_flag(colour_space: ColourSpace, spec: FlagSpec) -> Iterator[str]:
-    cols, _ = get_terminal_size((80, -1))
+    cols, rows = get_terminal_size((80, 140))
     _, bg_esc, decor = decor_for(colour_space)
     line = " " * cols
+    r, c = spec.aspect_ratio
+    height = sum(h for _, h in spec.palette)
+    ratio = r / c * 0.5
+    multiplier = int(min((rows - 4) / height, cols / height * ratio))
     for hexc, l in spec.palette:
         colour = parse_colour(hexc)
         code = decor(colour)
-        for _ in range(0, l):
+        for _ in range(0, l * multiplier):
             yield bg_esc
             yield code
             yield "m"
@@ -280,6 +285,7 @@ def main() -> None:
 
     if args.flag_only:
         flag_stripes = paint_flag(colour_space=colour_space, spec=spec)
+        # [*flag_stripes]
         print(*flag_stripes, sep="", end="")
     else:
         data = stdin.read()
