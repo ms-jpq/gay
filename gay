@@ -170,13 +170,6 @@ def parse_args() -> Namespace:
     return parser.parse_args(namespace=namespace)
 
 
-def right_pad(lines: List[str]) -> Iterator[str]:
-    max_len = max(map(len, lines))
-    for line in lines:
-        dif = max_len - len(line)
-        yield line + " " * dif
-
-
 def flag_colours(flag: FlagSpec) -> Palette:
     return [parse_colour(p) for p, _ in flag.palette]
 
@@ -290,7 +283,6 @@ def main() -> None:
     else:
         data = stdin.read()
         lines = data.splitlines()
-        padded = right_pad(lines)
 
         background = Background(args.background)
         raw_bg = BACKGROUND_PALETTE[background]
@@ -301,7 +293,7 @@ def main() -> None:
             spec=spec,
             bg=bg,
             period=args.period,
-            lines=padded,
+            lines=lines,
         )
         print(*new_lines, sep="", end="")
 
