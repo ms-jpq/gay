@@ -241,10 +241,11 @@ def paint_flag(colour_space: ColourSpace, spec: FlagSpec) -> Iterator[str]:
     height = sum(h for _, h in spec.palette)
     ratio = r / c * 0.5
     multiplier = int(min((rows - 4) / height, cols / height * ratio))
+    m = max(multiplier, 1)
     for hexc, l in spec.palette:
         colour = parse_colour(hexc)
         code = decor(colour)
-        for _ in range(0, l * multiplier):
+        for _ in range(0, l * m):
             yield bg_esc
             yield code
             yield "m"
