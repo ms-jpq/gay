@@ -4,14 +4,14 @@
 from argparse import ArgumentParser, Namespace
 from enum import Enum
 from itertools import islice
-from random import choice
+from random import choice, randint
 from sys import stdin
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, cast
 
 
 class ColourSpace(Enum):
-    EIGHT = 1
-    TRUE = 2
+    EIGHT = "8"
+    TRUE = "24"
 
 
 class Flags(Enum):
@@ -62,6 +62,10 @@ def parse_args() -> Namespace:
     parser.add_argument("--raw", action="store_true")
 
     parser.add_argument(
+        "--colour", choices=[c.value for c in ColourSpace], default="24",
+    )
+
+    parser.add_argument(
         "-l", "--les", "--lesbian", action="store_const", dest="flag", const=Flags.LES,
     )
     parser.add_argument(
@@ -92,6 +96,8 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "-e", "--enby", action="store_const", dest="flag", const=Flags.ENBY,
     )
+    parser.add_argument("-s", "--straight", action="store_true")
+
     parser.add_argument(
         "--light", action="store_const", dest="background", const=Background.LIGHT
     )
@@ -102,8 +108,7 @@ def parse_args() -> Namespace:
     return parser.parse_args(namespace=namespace)
 
 
-def right_pad(lines: List[str]) -> Iterator[str]:
-    max_len = max(map(len, lines))
+def right_pad(max_len: int, lines: List[str]) -> Iterator[str]:
     for line in lines:
         dif = max_len - len(line)
         yield line + " " * dif
@@ -147,6 +152,8 @@ def colourize(
     colour_space: ColourSpace,
     palette: Palette,
     bg: Optional[RGB],
+    rows: int,
+    cols: int,
     lines: Iterator[str],
 ) -> Iterator[str]:
     fg_esc, bg_esc, decor = decor_for(colour_space)
@@ -157,7 +164,7 @@ def colourize(
             yield bg_colour
             yield "m"
         for char in line:
-            colour = (200, 212, 233)
+            colour = (randint(0, 255), randint(0, 255), randint(0, 255))
             yield fg_esc
             yield decor(colour)
             yield "m"
@@ -168,10 +175,17 @@ def colourize(
 
 def main() -> None:
     args = parse_args()
-    lines = stdin.read().splitlines()
-    padded = right_pad(lines)
+    data = stdin.read()
 
-    colour_space = ColourSpace.TRUE
+    if args.straight:
+        print(data, end="")
+        return
+
+    lines = data.splitlines()
+    rows, cols = len(lines), max(map(len, lines))
+    padded = right_pad(cols, lines)
+
+    colour_space = ColourSpace(args.colour)
     palette = [*map(parse_colour, FLAG_PALETTE[args.flag])]
     bg = (
         None
@@ -180,7 +194,12 @@ def main() -> None:
     )
 
     new_lines = colourize(
-        colour_space=colour_space, palette=palette, bg=bg, lines=padded
+        colour_space=colour_space,
+        palette=palette,
+        bg=bg,
+        rows=rows,
+        cols=cols,
+        lines=padded,
     )
     pretty = "".join(new_lines)
     print(pretty, end="")
