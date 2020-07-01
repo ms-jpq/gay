@@ -36,17 +36,8 @@ class Background(Enum):
 
 HexColour = str
 RGB = Tuple[int, int, int]
-RawPalette = List[HexColour]
+RawPalette = List[Tuple[HexColour, int]]
 Palette = List[RGB]
-
-
-def parse_colour(colour: HexColour) -> RGB:
-    hexc = colour[1:]
-    it = iter(hexc)
-    parsed = tuple(
-        int(f"{h1}{h2}", 16) for h1, h2 in iter(lambda: tuple(islice(it, 2)), ())
-    )
-    return cast(RGB, parsed)
 
 
 @dataclass
@@ -54,34 +45,56 @@ class FlagSpec:
     aspect_ratio: Tuple[int, int]
     palette: RawPalette
 
-    def colours(self) -> Palette:
-        return [parse_colour(p) for p in self.palette]
-
 
 FLAG_SPECS: Dict[Flags, FlagSpec] = {
     Flags.LES: FlagSpec(
         aspect_ratio=(3, 4),
-        palette=["#D62E02", "#FD9855", "#FFFFFF", "#D161A2", "#A20160"],
+        palette=[
+            ("#D62E02", 1),
+            ("#FD9855", 1),
+            ("#FFFFFF", 1),
+            ("#D161A2", 1),
+            ("#A20160", 1),
+        ],
     ),
     Flags.GAY: FlagSpec(
         aspect_ratio=(3, 4),
-        palette=["#FF0018", "#FFA52C", "#FFFF41", "#008018", "#0000F9", "#86007D"],
+        palette=[
+            ("#FF0018", 1),
+            ("#FFA52C", 1),
+            ("#FFFF41", 1),
+            ("#008018", 1),
+            ("#0000F9", 1),
+            ("#86007D", 1),
+        ],
     ),
-    Flags.BI: FlagSpec(aspect_ratio=(3, 4), palette=["#D60270", "#9B4F96", "#0038A8"],),
+    Flags.BI: FlagSpec(
+        aspect_ratio=(3, 4), palette=[("#D60270", 1), ("#9B4F96", 1), ("#0038A8", 1)],
+    ),
     Flags.TRANS: FlagSpec(
         aspect_ratio=(3, 4),
-        palette=["#55CDFC", "#F7A8B8", "#FFFFFF", "#F7A8B8", "#55CDFC"],
+        palette=[
+            ("#55CDFC", 1),
+            ("#F7A8B8", 1),
+            ("#FFFFFF", 1),
+            ("#F7A8B8", 1),
+            ("#55CDFC", 1),
+        ],
     ),
     Flags.ACE: FlagSpec(
-        aspect_ratio=(3, 4), palette=["#000000", "#A4A4A4", "#FFFFFF", "#810081"],
+        aspect_ratio=(3, 4),
+        palette=[("#000000", 1), ("#A4A4A4", 1), ("#FFFFFF", 1), ("#810081", 1)],
     ),
     Flags.PAN: FlagSpec(
-        aspect_ratio=(3, 4), palette=["#FF1B8D", "#FFDA00", "#1BB3FF"],
+        aspect_ratio=(3, 4), palette=[("#FF1B8D", 1), ("#FFDA00", 1), ("#1BB3FF", 1)],
     ),
     Flags.NB: FlagSpec(
-        aspect_ratio=(3, 4), palette=["#FFF430", "#FFFFFF", "#9C59D1", "#000000"],
+        aspect_ratio=(3, 4),
+        palette=[("#FFF430", 1), ("#FFFFFF", 1), ("#9C59D1", 1), ("#000000", 1)],
     ),
-    Flags.GQ: FlagSpec(aspect_ratio=(3, 4), palette=["#B77FDD", "#FFFFFF", "#48821E"],),
+    Flags.GQ: FlagSpec(
+        aspect_ratio=(3, 4), palette=[("#B77FDD", 1), ("#FFFFFF", 1), ("#48821E", 1)]
+    ),
 }
 
 BACKGROUND_PALETTE: Dict[Background, Optional[HexColour]] = {
@@ -158,6 +171,19 @@ def right_pad(lines: List[str]) -> Iterator[str]:
     for line in lines:
         dif = max_len - len(line)
         yield line + " " * dif
+
+
+def flag_colours(flag: FlagSpec) -> Palette:
+    return [parse_colour(p) for p, _ in flag.palette]
+
+
+def parse_colour(colour: HexColour) -> RGB:
+    hexc = colour[1:]
+    it = iter(hexc)
+    parsed = tuple(
+        int(f"{h1}{h2}", 16) for h1, h2 in iter(lambda: tuple(islice(it, 2)), ())
+    )
+    return cast(RGB, parsed)
 
 
 def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
@@ -238,7 +264,7 @@ def main() -> None:
 
     colour_space = ColourSpace(args.colour)
     background = Background(args.background)
-    palette = FLAG_SPECS[args.flag].colours()
+    palette = flag_colours(FLAG_SPECS[args.flag])
     raw_bg = BACKGROUND_PALETTE[background]
     bg = parse_colour(raw_bg) if raw_bg else None
 
