@@ -1,35 +1,11 @@
-# WORK IN PROGRESS
-
 # GAY 🌈
 
 Gayer version of [`lolcat`](https://github.com/busyloop/lolcat)
 
+## Get Gay
+
+`pip install git+https://github.com/ms-jpq/gay.git`
+
+or just copy the file `gay` somewhere, more power to you.
+
 ## Big Gay
-
-`-l, --les, --lesbian`
-
-![lesbian.png]()
-
-`-g, --gay`
-
-![gay.png]()
-
-`-b, --bi, --bisexual`
-
-![bisexual.png]()
-
-`-t, --trans, --transgender`
-
-![transgender.png]()
-
-`-a, --ace, --asexual`
-
-![asexual.png]()
-
-`-p, --pan, --pansexual`
-
-![pansexual.png]()
-
-`-e, --enby`
-
-![enby.png]()

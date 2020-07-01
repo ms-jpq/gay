@@ -236,12 +236,12 @@ def decor_for(space: ColourSpace) -> Tuple[str, str, Callable[[RGB], str]]:
 def paint_flag(colour_space: ColourSpace, spec: FlagSpec) -> Iterator[str]:
     cols, rows = get_terminal_size((80, 140))
     _, bg_esc, decor = decor_for(colour_space)
-    line = " " * cols
     r, c = spec.aspect_ratio
     height = sum(h for _, h in spec.palette)
     ratio = r / c * 0.5
     multiplier = int(min((rows - 4) / height, cols / height * ratio))
     m = max(multiplier, 1)
+    line = " " * cols
     for hexc, l in spec.palette:
         colour = parse_colour(hexc)
         code = decor(colour)
