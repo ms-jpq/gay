@@ -22,7 +22,8 @@ class Flags(Enum):
     TRANS = 4
     ACE = 5
     PAN = 6
-    ENBY = 7
+    NB = 7
+    GQ = 8
 
 
 class Background(Enum):
@@ -45,7 +46,8 @@ FLAG_PALETTE: Dict[Flags, RawPalette] = {
     Flags.TRANS: ["#55CDFC", "#F7A8B8", "#FFFFFF", "#F7A8B8", "#55CDFC"],
     Flags.ACE: ["#000000", "#A4A4A4", "#FFFFFF", "#810081"],
     Flags.PAN: ["#FF1B8D", "#FFDA00", "#1BB3FF"],
-    Flags.ENBY: ["#FFF430", "#FFFFFF", "#9C59D1", "#000000"],
+    Flags.NB: ["#FFF430", "#FFFFFF", "#9C59D1", "#000000"],
+    Flags.GQ: ["#B77FDD", "#FFFFFF", "#48821E"],
 }
 
 
@@ -98,9 +100,14 @@ def parse_args() -> Namespace:
         const=Flags.PAN,
     )
     parser.add_argument(
-        "-e", "--enby", action="store_const", dest="flag", const=Flags.ENBY,
+        "-n", "--nb", "--non-binary", action="store_const", dest="flag", const=Flags.NB,
+    )
+    parser.add_argument(
+        "--gq", "--gender-queer", action="store_const", dest="flag", const=Flags.GQ,
     )
     parser.add_argument("-s", "--straight", action="store_true")
+
+    parser.add_argument("--period", type=int, default=randint(3, 9))
 
     parser.add_argument(
         "--bg",
@@ -113,7 +120,8 @@ def parse_args() -> Namespace:
     return parser.parse_args(namespace=namespace)
 
 
-def right_pad(max_len: int, lines: List[str]) -> Iterator[str]:
+def right_pad(lines: List[str]) -> Iterator[str]:
+    max_len = max(map(len, lines))
     for line in lines:
         dif = max_len - len(line)
         yield line + " " * dif
@@ -135,20 +143,19 @@ def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
     return cast(RGB, tuple(new))
 
 
-def rgb_gen(palette: Palette, rows: int, cols: int) -> Iterator[RGB]:
-    width = randint(3, 9)
+def rgb_gen(palette: Palette, rep: int) -> Iterator[RGB]:
     gen = cycle(palette)
 
     period = pi * pi / 2
 
     def wave(t: float) -> float:
-        x = t / width * period
+        x = t / rep * period
         return sin(x / pi + pi / 2)
 
     prev = next(gen)
     while True:
         curr = next(gen)
-        for t in range(0, width + 1):
+        for t in range(0, rep + 1):
             mix = wave(t)
             yield lerp(prev, curr, mix)
         prev = curr
@@ -203,8 +210,7 @@ def main() -> None:
         return
 
     lines = data.splitlines()
-    rows, cols = len(lines), max(map(len, lines))
-    padded = right_pad(cols, lines)
+    padded = right_pad(lines)
 
     colour_space = ColourSpace(args.colour)
     background = Background(args.background)
@@ -215,7 +221,7 @@ def main() -> None:
     new_lines = colourize(
         colour_space=colour_space,
         bg=bg,
-        colour_gen=rgb_gen(palette, rows, cols),
+        colour_gen=rgb_gen(palette, args.period),
         lines=padded,
     )
     pretty = "".join(new_lines)
