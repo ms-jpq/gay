@@ -3,8 +3,8 @@
 
 from argparse import ArgumentParser, Namespace
 from enum import Enum
-from itertools import islice
-from random import choice, randint
+from itertools import islice, cycle
+from random import choice
 from sys import stdin
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, cast
 
@@ -130,6 +130,10 @@ def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
     return cast(RGB, tuple(new))
 
 
+def rgb_gen(palette: Palette, rows: int, cols: int) -> Iterator[RGB]:
+    yield from cycle(palette)
+
+
 def decor_8(rgb: RGB) -> str:
     r, g, b = map(lambda c: int(round(c / 255 * 5)), rgb)
     return str(16 + 36 * r + 6 * g + b)
@@ -150,10 +154,8 @@ def decor_for(space: ColourSpace) -> Tuple[str, str, Callable[[RGB], str]]:
 
 def colourize(
     colour_space: ColourSpace,
-    palette: Palette,
     bg: Optional[RGB],
-    rows: int,
-    cols: int,
+    colour_gen: Iterator[RGB],
     lines: Iterator[str],
 ) -> Iterator[str]:
     fg_esc, bg_esc, decor = decor_for(colour_space)
@@ -164,7 +166,7 @@ def colourize(
             yield bg_colour
             yield "m"
         for char in line:
-            colour = (randint(0, 255), randint(0, 255), randint(0, 255))
+            colour = next(colour_gen)
             yield fg_esc
             yield decor(colour)
             yield "m"
@@ -195,10 +197,8 @@ def main() -> None:
 
     new_lines = colourize(
         colour_space=colour_space,
-        palette=palette,
         bg=bg,
-        rows=rows,
-        cols=cols,
+        colour_gen=rgb_gen(palette, rows, cols),
         lines=padded,
     )
     pretty = "".join(new_lines)
