@@ -152,7 +152,7 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "--gq", "--gender-queer", action="store_const", dest="flag", const=Flags.GQ,
     )
-    parser.add_argument("--period", type=int, default=randint(5, 10))
+    parser.add_argument("--period", type=lambda i: abs(int(i)), default=randint(5, 10))
 
     return parser.parse_args(namespace=namespace)
 
@@ -201,9 +201,12 @@ def decor_8(rgb: RGB) -> Iterator[str]:
 
 
 def decor_24(rgb: RGB) -> Iterator[str]:
-    it = chain(*zip(repeat(";"), map(str, rgb)))
-    next(it)
-    yield from it
+    r, g, b = map(str, rgb)
+    yield r
+    yield ";"
+    yield g
+    yield ";"
+    yield b
 
 
 def decor_for(space: ColourSpace) -> Tuple[str, str, Callable[[RGB], Iterator[str]]]:
@@ -265,9 +268,10 @@ def main() -> None:
     else:
         data = stdin.read()
         lines = data.splitlines()
+        period = max(5, args.period) if args.period else 5
 
         new_lines = colourize(
-            colour_space=colour_space, spec=spec, period=args.period, lines=iter(lines),
+            colour_space=colour_space, spec=spec, period=period, lines=iter(lines),
         )
         print(*new_lines, sep="", end="")
 
