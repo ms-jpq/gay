@@ -21,6 +21,11 @@ class ColourSpace(Enum):
     TRUE = "24"
 
 
+class InterpolationMode(Enum):
+    SHORT = "short"
+    FULL = "full"
+
+
 class Flags(Enum):
     LES = 1
     GAY = 2
@@ -158,8 +163,14 @@ def parse_args() -> Namespace:
     opt_group.add_argument(
         "-c",
         "--colour",
-        choices=[c.value for c in ColourSpace],
+        choices=(c.value for c in ColourSpace),
         default=colour_space.value,
+    )
+    opt_group.add_argument(
+        "-i",
+        "--interpolation",
+        choices=[i.value for i in InterpolationMode],
+        default=InterpolationMode.FULL,
     )
     opt_group.add_argument(
         "--period", type=lambda i: abs(int(i)), default=randint(5, 10)
@@ -331,6 +342,7 @@ def main() -> None:
         print(*flag_stripes, sep="", end="")
     else:
         lines = readlines()
+        # interpolation = InterpolationMode(args.interpolation)
         period = max(5, args.period) if args.period else 5
 
         gen = colourize(
