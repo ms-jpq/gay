@@ -245,7 +245,7 @@ def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
     return cast(RGB, tuple(new))
 
 
-def unicode_width(tab_width: int, char: str) -> int:
+def unicode_width(char: str) -> int:
     try:
         code = east_asian_width(char)
         return UNICODE_WIDTH_LOOKUP.get(code, 1)
@@ -268,7 +268,7 @@ def enumerate_pos(
                     char = " " * tab_width
                     x += tab_width
                 else:
-                    x += unicode_width(tab_width, char)
+                    x += unicode_width(char)
                 if x >= cols:
                     x, y = x - cols, y + 1
                 yield (x, y), char
