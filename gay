@@ -3,9 +3,9 @@
 
 from argparse import ArgumentParser, Namespace
 from enum import Enum
-from itertools import cycle, islice
-from random import choice
-from shutil import get_terminal_size
+from itertools import chain, cycle, islice
+from math import pi, sin
+from random import choice, randint
 from sys import stdin
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, cast
 
@@ -132,21 +132,23 @@ def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
 
 
 def rgb_gen(palette: Palette, rows: int, cols: int) -> Iterator[RGB]:
-    tcols, _ = get_terminal_size((cols, rows))
-    min_cols = min(cols, tcols)
-    rep = min_cols // len(palette)
-
-    def loop():
-        return map(lambda i: i / rep, range(0, rep))
-
+    width = randint(3, 9)
     gen = cycle(palette)
+
+    period = pi * pi / 2
+
+    def wave(t: float) -> float:
+        x = t / period
+        return sin(x / pi + pi / 2)
+
     prev = next(gen)
-    curr = next(gen)
     while True:
-        for mix in loop():
+        curr = next(gen)
+        for t in range(0, width + 1):
+            mix = wave(t)
+            print(mix)
             yield lerp(prev, curr, mix)
         prev = curr
-        curr = next(gen)
 
 
 def decor_8(rgb: RGB) -> str:
