@@ -1,4 +1,4 @@
-# GAY 🌈
+# [GAY 🏳️‍🌈](https://ms-jpq.github.io/gay)
 
 Colour your text / terminal to be more gay.
 
