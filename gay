@@ -157,6 +157,15 @@ def parse_args() -> Namespace:
     return parser.parse_args(namespace=namespace)
 
 
+def readlines() -> Iterator[str]:
+    while True:
+        line = stdin.readline()
+        if line:
+            yield line.rstrip()
+        else:
+            break
+
+
 def flag_colours(flag: FlagSpec) -> Palette:
     return [parse_colour(p) for p, _ in flag.palette]
 
@@ -266,13 +275,13 @@ def main() -> None:
         flag_stripes = paint_flag(colour_space=colour_space, spec=spec)
         print(*flag_stripes, sep="", end="")
     else:
-        data = stdin.read()
-        lines = data.splitlines()
+        lines = readlines()
         period = max(5, args.period) if args.period else 5
 
         new_lines = colourize(
-            colour_space=colour_space, spec=spec, period=period, lines=iter(lines),
+            colour_space=colour_space, spec=spec, period=period, lines=lines
         )
+
         print(*new_lines, sep="", end="")
 
 
