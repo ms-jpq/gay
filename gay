@@ -123,15 +123,15 @@ def parse_colour(colour: HexColour) -> RGB:
     return cast(RGB, parsed)
 
 
-def lerp(c1: RGB, c2: RGB, mix: int) -> RGB:
+def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
     lhs = map(lambda c: c * mix, c1)
     rhs = map(lambda c: c * (1 - mix), c2)
-    new = map(sum, zip(lhs, rhs))
+    new = map(lambda c: int(round(sum(c))), zip(lhs, rhs))
     return cast(RGB, tuple(new))
 
 
 def decor_8(rgb: RGB) -> str:
-    r, g, b = map(lambda c: c / 255 * 5, rgb)
+    r, g, b = map(lambda c: int(round(c / 255 * 5)), rgb)
     return str(16 + 36 * r + 6 * g + b)
 
 
