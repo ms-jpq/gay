@@ -95,10 +95,6 @@ FLAG_SPECS: Dict[Flags, FlagSpec] = {
 }
 
 
-def on_exit() -> None:
-    print("\033[0m", end="", flush=True)
-
-
 def parse_args() -> Namespace:
     rand_flag = choice([f for f in Flags])
     colour_space = (
@@ -157,6 +153,10 @@ def parse_args() -> Namespace:
     return parser.parse_args(namespace=namespace)
 
 
+def on_exit() -> None:
+    print("\033[0m", end="", flush=True)
+
+
 def readlines() -> Iterator[str]:
     while True:
         line = stdin.readline()
@@ -177,31 +177,6 @@ def parse_colour(colour: HexColour) -> RGB:
         int(f"{h1}{h2}", 16) for h1, h2 in iter(lambda: tuple(islice(it, 2)), ())
     )
     return cast(RGB, parsed)
-
-
-def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
-    lhs = map(lambda c: c * mix, c1)
-    rhs = map(lambda c: c * (1 - mix), c2)
-    new = map(lambda c: int(round(sum(c))), zip(lhs, rhs))
-    return cast(RGB, tuple(new))
-
-
-def rgb_gen(palette: Palette, rep: int) -> Iterator[RGB]:
-    gen = cycle(palette)
-
-    period = pi * pi / 2
-
-    def wave(t: float) -> float:
-        x = t / rep * period
-        return sin(x / pi + pi / 2)
-
-    prev = next(gen)
-    while True:
-        curr = next(gen)
-        for t in range(0, rep + 1):
-            mix = wave(t)
-            yield lerp(prev, curr, mix)
-        prev = curr
 
 
 def decor_8(rgb: RGB) -> Iterator[str]:
@@ -245,6 +220,31 @@ def paint_flag(colour_space: ColourSpace, spec: FlagSpec) -> Iterator[str]:
             yield line
             yield "\033[0m"
             yield "\n"
+
+
+def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
+    lhs = map(lambda c: c * mix, c1)
+    rhs = map(lambda c: c * (1 - mix), c2)
+    new = map(lambda c: int(round(sum(c))), zip(lhs, rhs))
+    return cast(RGB, tuple(new))
+
+
+def rgb_gen(palette: Palette, rep: int) -> Iterator[RGB]:
+    gen = cycle(palette)
+
+    period = pi * pi / 2
+
+    def wave(t: float) -> float:
+        x = t / rep * period
+        return sin(x / pi + pi / 2)
+
+    prev = next(gen)
+    while True:
+        curr = next(gen)
+        for t in range(0, rep + 1):
+            mix = wave(t)
+            yield lerp(prev, curr, mix)
+        prev = curr
 
 
 def colourize(
