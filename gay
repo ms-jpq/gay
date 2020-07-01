@@ -13,6 +13,7 @@ from shutil import get_terminal_size
 from signal import SIG_DFL, SIGPIPE, signal
 from sys import stdin
 from typing import Callable, Dict, Iterator, List, Tuple, cast
+from unicodedata import east_asian_width
 
 
 class ColourSpace(Enum):
@@ -35,13 +36,17 @@ HexColour = str
 RGB = Tuple[int, int, int]
 RawPalette = List[Tuple[HexColour, int]]
 Palette = List[RGB]
+AspectRatio = Tuple[int, int]
+Position = Tuple[int, int]
 
 
 @dataclass
 class FlagSpec:
-    aspect_ratio: Tuple[int, int]
+    aspect_ratio: AspectRatio
     palette: RawPalette
 
+
+DEFAULT_TERM_SIZE = (80, 80)
 
 FLAG_SPECS: Dict[Flags, FlagSpec] = {
     Flags.LES: FlagSpec(
@@ -105,25 +110,20 @@ def parse_args() -> Namespace:
     namespace = Namespace(flag=rand_flag)
     parser = ArgumentParser()
 
-    parser.add_argument(
-        "-c",
-        "--colour",
-        choices=[c.value for c in ColourSpace],
-        default=colour_space.value,
-    )
+    mode_group = parser.add_argument_group()
+    mode_group.add_argument("-f", "--flag", dest="flag_only", action="store_true")
 
-    parser.add_argument("-f", "--flag", dest="flag_only", action="store_true")
-
-    parser.add_argument(
+    flag_group = parser.add_argument_group()
+    flag_group.add_argument(
         "-l", "--les", "--lesbian", action="store_const", dest="flag", const=Flags.LES,
     )
-    parser.add_argument(
+    flag_group.add_argument(
         "-g", "--gay", action="store_const", dest="flag", const=Flags.GAY,
     )
-    parser.add_argument(
+    flag_group.add_argument(
         "-b", "--bi", "--bisexual", action="store_const", dest="flag", const=Flags.BI,
     )
-    parser.add_argument(
+    flag_group.add_argument(
         "-t",
         "--trans",
         "--transgender",
@@ -131,10 +131,10 @@ def parse_args() -> Namespace:
         dest="flag",
         const=Flags.TRANS,
     )
-    parser.add_argument(
+    flag_group.add_argument(
         "-a", "--ace", "--asexual", action="store_const", dest="flag", const=Flags.ACE,
     )
-    parser.add_argument(
+    flag_group.add_argument(
         "-p",
         "--pan",
         "--pansexual",
@@ -142,13 +142,24 @@ def parse_args() -> Namespace:
         dest="flag",
         const=Flags.PAN,
     )
-    parser.add_argument(
+    flag_group.add_argument(
         "-n", "--nb", "--non-binary", action="store_const", dest="flag", const=Flags.NB,
     )
-    parser.add_argument(
+    flag_group.add_argument(
         "--gq", "--gender-queer", action="store_const", dest="flag", const=Flags.GQ,
     )
-    parser.add_argument("--period", type=lambda i: abs(int(i)), default=randint(5, 10))
+
+    opt_group = parser.add_argument_group()
+    opt_group.add_argument(
+        "-c",
+        "--colour",
+        choices=[c.value for c in ColourSpace],
+        default=colour_space.value,
+    )
+    opt_group.add_argument(
+        "--period", type=lambda i: abs(int(i)), default=randint(5, 10)
+    )
+    opt_group.add_argument("--tab-width", type=int, default=4)
 
     return parser.parse_args(namespace=namespace)
 
@@ -203,7 +214,7 @@ def decor_for(space: ColourSpace) -> Tuple[str, str, Callable[[RGB], Iterator[st
 
 
 def paint_flag(colour_space: ColourSpace, spec: FlagSpec) -> Iterator[str]:
-    cols, rows = get_terminal_size((80, 140))
+    cols, rows = get_terminal_size(DEFAULT_TERM_SIZE)
     _, bg_esc, decor = decor_for(colour_space)
     r, c = spec.aspect_ratio
     height = sum(h for _, h in spec.palette)
@@ -229,6 +240,43 @@ def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
     return cast(RGB, tuple(new))
 
 
+def unicode_width(char: str) -> str:
+    try:
+        return east_asian_width(char)
+    except Exception:
+        return ""
+
+
+def enumerate_pos(
+    tab_width: int, lines: Iterator[Iterator[str]],
+) -> Iterator[Iterator[Tuple[Position, str]]]:
+    cols, _ = get_terminal_size(DEFAULT_TERM_SIZE)
+    x, y = 0, 0
+    for line in lines:
+        x, y = 0, y + 1
+
+        def gen() -> Iterator[Tuple[Position, str]]:
+            nonlocal x, y
+            for char in line:
+                width = unicode_width(char)
+                if char == "\t":
+                    char = " " * tab_width
+                    x += tab_width
+                elif width == "W":
+                    # CJK
+                    x += 2
+                elif width == "N":
+                    # Non printable
+                    pass
+                else:
+                    x += 1
+                if x >= cols:
+                    x, y = x - cols, y + 1
+                yield (x, y), char
+
+        yield gen()
+
+
 def rgb_gen(palette: Palette, rep: int) -> Iterator[RGB]:
     gen = cycle(palette)
 
@@ -248,15 +296,19 @@ def rgb_gen(palette: Palette, rep: int) -> Iterator[RGB]:
 
 
 def colourize(
-    colour_space: ColourSpace, spec: FlagSpec, period: int, lines: Iterator[str],
+    colour_space: ColourSpace,
+    spec: FlagSpec,
+    tab_width: int,
+    period: int,
+    lines: Iterator[str],
 ) -> Iterator[Iterator[str]]:
     palette = flag_colours(spec)
     colour_gen = rgb_gen(palette, period)
     fg_esc, _, decor = decor_for(colour_space)
-    for line in lines:
+    for line in enumerate_pos(tab_width, lines):
 
         def gen() -> Iterator[str]:
-            for char in line:
+            for _, char in line:
                 colour = next(colour_gen)
                 yield fg_esc
                 yield from decor(colour)
@@ -283,7 +335,11 @@ def main() -> None:
         period = max(5, args.period) if args.period else 5
 
         gen = colourize(
-            colour_space=colour_space, spec=spec, period=period, lines=lines
+            colour_space=colour_space,
+            spec=spec,
+            tab_width=args.tab_width,
+            period=period,
+            lines=lines,
         )
         for new_line in gen:
             print(*new_line, sep="", end="")
