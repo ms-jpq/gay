@@ -6,7 +6,12 @@ from enum import Enum
 from itertools import islice
 from random import choice
 from sys import stdin
-from typing import Dict, Iterator, List, Optional, Tuple, cast
+from typing import Callable, Dict, Iterator, List, Optional, Tuple, cast
+
+
+class ColourSpace(Enum):
+    EIGHT = 1
+    TRUE = 2
 
 
 class Flags(Enum):
@@ -25,12 +30,13 @@ class Background(Enum):
     DARK = 3
 
 
-Colour = str
-Palette = List[str]
+HexColour = str
 RGB = Tuple[int, int, int]
+RawPalette = List[HexColour]
+Palette = List[RGB]
 
 
-FLAG_PALETTE: Dict[Flags, Palette] = {
+FLAG_PALETTE: Dict[Flags, RawPalette] = {
     Flags.LES: ["#D62E02", "#FD9855", "#FFFFFF", "#D161A2", "#A20160"],
     Flags.GAY: ["#FF0018", "#FFA52C", "#FFFF41", "#008018", "#0000F9", "#86007D"],
     Flags.BI: ["#D60270", "#9B4F96", "#0038A8"],
@@ -41,7 +47,7 @@ FLAG_PALETTE: Dict[Flags, Palette] = {
 }
 
 
-BACKGROUND_PALETTE: Dict[Background, Optional[Colour]] = {
+BACKGROUND_PALETTE: Dict[Background, Optional[HexColour]] = {
     Background.NONE: None,
     Background.LIGHT: "#FAFAFA",
     Background.DARK: "#606060",
@@ -103,7 +109,7 @@ def right_pad(lines: List[str]) -> Iterator[str]:
         yield line + " " * dif
 
 
-def parse_colour(colour: Colour) -> RGB:
+def parse_colour(colour: HexColour) -> RGB:
     hexc = colour[1:]
     it = iter(hexc)
     parsed = tuple(
@@ -115,20 +121,47 @@ def parse_colour(colour: Colour) -> RGB:
 def lerp(c1: RGB, c2: RGB, mix: int) -> RGB:
     lhs = map(lambda c: c * mix, c1)
     rhs = map(lambda c: c * (1 - mix), c2)
-    new = map(lambda c: int(round(sum(c))), zip(lhs, rhs))
-    return tuple(new)
+    new = map(sum, zip(lhs, rhs))
+    return cast(RGB, tuple(new))
 
 
-def nearest(rgb: RGB) -> int:
-    return
+def decor_8(rgb: RGB) -> str:
+    r, g, b = map(lambda c: c / 255 * 5, rgb)
+    return str(16 + 36 * r + 6 * g + b)
+
+
+def decor_24(rgb: RGB) -> str:
+    return ";".join(map(str, rgb))
+
+
+def decor_for(space: ColourSpace) -> Callable[[RGB], str]:
+    if space == ColourSpace.EIGHT:
+        return decor_8
+    elif space == ColourSpace.TRUE:
+        return decor_24
+    else:
+        raise ValueError()
 
 
 def colourize(
-    palette: Palette, bg: Optional[Colour], lines: Iterator[str]
+    colour_space: ColourSpace,
+    palette: Palette,
+    bg: Optional[RGB],
+    lines: Iterator[str],
 ) -> Iterator[str]:
+    decor = decor_for(colour_space)
+    bg_colour = decor(bg) if bg else ""
     for line in lines:
+        if bg:
+            yield "\033[48;5;"
+            yield bg_colour
+            yield "m"
         for char in line:
+            yield "\033[38;5;"
+            yield str(2)
+            yield "m"
             yield char
+        yield "\033[0m"
         yield "\n"
 
 
@@ -136,9 +169,18 @@ def main() -> None:
     args = parse_args()
     lines = stdin.read().splitlines()
     padded = right_pad(lines)
-    palette = FLAG_PALETTE[args.flag]
-    bg = BACKGROUND_PALETTE[args.background]
-    new_lines = colourize(palette, bg, padded)
+
+    colour_space = ColourSpace.TRUE
+    palette = [*map(parse_colour, FLAG_PALETTE[args.flag])]
+    bg = (
+        None
+        if args.background == Background.NONE
+        else parse_colour(BACKGROUND_PALETTE[args.background])
+    )
+
+    new_lines = colourize(
+        colour_space=colour_space, palette=palette, bg=bg, lines=padded
+    )
     pretty = "".join(new_lines)
     print(pretty, end="")
 
