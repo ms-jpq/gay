@@ -4,7 +4,7 @@
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 from enum import Enum
-from itertools import cycle, islice
+from itertools import chain, cycle, islice, repeat
 from math import pi, sin
 from random import choice, randint
 from shutil import get_terminal_size
@@ -141,7 +141,7 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "--gq", "--gender-queer", action="store_const", dest="flag", const=Flags.GQ,
     )
-    parser.add_argument("--period", type=int, default=randint(3, 9))
+    parser.add_argument("--period", type=int, default=randint(5, 10))
 
     return parser.parse_args(namespace=namespace)
 
@@ -184,16 +184,18 @@ def rgb_gen(palette: Palette, rep: int) -> Iterator[RGB]:
         prev = curr
 
 
-def decor_8(rgb: RGB) -> str:
+def decor_8(rgb: RGB) -> Iterator[str]:
     r, g, b = map(lambda c: int(round(c / 255 * 5)), rgb)
-    return str(16 + 36 * r + 6 * g + b)
+    yield str(16 + 36 * r + 6 * g + b)
 
 
-def decor_24(rgb: RGB) -> str:
-    return ";".join(map(str, rgb))
+def decor_24(rgb: RGB) -> Iterator[str]:
+    it = chain(*zip(repeat(";"), map(str, rgb)))
+    next(it)
+    yield from it
 
 
-def decor_for(space: ColourSpace) -> Tuple[str, str, Callable[[RGB], str]]:
+def decor_for(space: ColourSpace) -> Tuple[str, str, Callable[[RGB], Iterator[str]]]:
     if space == ColourSpace.EIGHT:
         return "\033[38;5;", "\033[48;5;", decor_8
     elif space == ColourSpace.TRUE:
@@ -213,10 +215,10 @@ def paint_flag(colour_space: ColourSpace, spec: FlagSpec) -> Iterator[str]:
     line = " " * cols
     for hexc, l in spec.palette:
         colour = parse_colour(hexc)
-        code = decor(colour)
+        esc_codes = decor(colour)
         for _ in range(0, l * m):
             yield bg_esc
-            yield code
+            yield from esc_codes
             yield "m"
             yield line
             yield "\033[0m"
@@ -224,10 +226,7 @@ def paint_flag(colour_space: ColourSpace, spec: FlagSpec) -> Iterator[str]:
 
 
 def colourize(
-    colour_space: ColourSpace,
-    spec: FlagSpec,
-    period: int,
-    lines: Iterator[str],
+    colour_space: ColourSpace, spec: FlagSpec, period: int, lines: Iterator[str],
 ) -> Iterator[str]:
     palette = flag_colours(spec)
     colour_gen = rgb_gen(palette, period)
@@ -236,7 +235,7 @@ def colourize(
         for char in line:
             colour = next(colour_gen)
             yield fg_esc
-            yield decor(colour)
+            yield from decor(colour)
             yield "m"
             yield char
         yield "\033[0m"
