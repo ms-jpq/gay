@@ -48,6 +48,11 @@ class FlagSpec:
 
 DEFAULT_TERM_SIZE = (80, 80)
 
+UNICODE_WIDTH_LOOKUP = {
+    "W": 2,  # CJK
+    "N": 0,  # Non printable
+}
+
 FLAG_SPECS: Dict[Flags, FlagSpec] = {
     Flags.LES: FlagSpec(
         aspect_ratio=(3, 5),
@@ -240,15 +245,16 @@ def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
     return cast(RGB, tuple(new))
 
 
-def unicode_width(char: str) -> str:
+def unicode_width(tab_width: int, char: str) -> int:
     try:
-        return east_asian_width(char)
+        code = east_asian_width(char)
+        return UNICODE_WIDTH_LOOKUP.get(code, 1)
     except Exception:
-        return ""
+        return 1
 
 
 def enumerate_pos(
-    tab_width: int, lines: Iterator[Iterator[str]],
+    tab_width: int, lines: Iterator[str],
 ) -> Iterator[Iterator[Tuple[Position, str]]]:
     cols, _ = get_terminal_size(DEFAULT_TERM_SIZE)
     x, y = 0, 0
@@ -258,18 +264,11 @@ def enumerate_pos(
         def gen() -> Iterator[Tuple[Position, str]]:
             nonlocal x, y
             for char in line:
-                width = unicode_width(char)
                 if char == "\t":
                     char = " " * tab_width
                     x += tab_width
-                elif width == "W":
-                    # CJK
-                    x += 2
-                elif width == "N":
-                    # Non printable
-                    pass
                 else:
-                    x += 1
+                    x += unicode_width(tab_width, char)
                 if x >= cols:
                     x, y = x - cols, y + 1
                 yield (x, y), char
