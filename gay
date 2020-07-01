@@ -3,8 +3,9 @@
 
 from argparse import ArgumentParser, Namespace
 from enum import Enum
-from itertools import islice, cycle
+from itertools import cycle, islice
 from random import choice
+from shutil import get_terminal_size
 from sys import stdin
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, cast
 
@@ -131,7 +132,21 @@ def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
 
 
 def rgb_gen(palette: Palette, rows: int, cols: int) -> Iterator[RGB]:
-    yield from cycle(palette)
+    tcols, _ = get_terminal_size((cols, rows))
+    min_cols = min(cols, tcols)
+    rep = min_cols // len(palette)
+
+    def loop():
+        return map(lambda i: i / rep, range(0, rep))
+
+    gen = cycle(palette)
+    prev = next(gen)
+    curr = next(gen)
+    while True:
+        for mix in loop():
+            yield lerp(prev, curr, mix)
+        prev = curr
+        curr = next(gen)
 
 
 def decor_8(rgb: RGB) -> str:
@@ -159,12 +174,11 @@ def colourize(
     lines: Iterator[str],
 ) -> Iterator[str]:
     fg_esc, bg_esc, decor = decor_for(colour_space)
-    bg_colour = decor(bg) if bg else ""
+    if bg:
+        yield bg_esc
+        yield decor(bg)
+        yield "m"
     for line in lines:
-        if bg:
-            yield bg_esc
-            yield bg_colour
-            yield "m"
         for char in line:
             colour = next(colour_gen)
             yield fg_esc
