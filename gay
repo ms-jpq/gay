@@ -249,19 +249,23 @@ def paint_flag(colour_space: ColourSpace, spec: FlagSpec) -> Iterator[str]:
 
 def colourize(
     colour_space: ColourSpace, spec: FlagSpec, period: int, lines: Iterator[str],
-) -> Iterator[str]:
+) -> Iterator[Iterator[str]]:
     palette = flag_colours(spec)
     colour_gen = rgb_gen(palette, period)
     fg_esc, _, decor = decor_for(colour_space)
     for line in lines:
-        for char in line:
-            colour = next(colour_gen)
-            yield fg_esc
-            yield from decor(colour)
-            yield "m"
-            yield char
-        yield "\033[0m"
-        yield "\n"
+
+        def gen() -> Iterator[str]:
+            for char in line:
+                colour = next(colour_gen)
+                yield fg_esc
+                yield from decor(colour)
+                yield "m"
+                yield char
+            yield "\033[0m"
+            yield "\n"
+
+        yield gen()
 
 
 def main() -> None:
@@ -278,11 +282,11 @@ def main() -> None:
         lines = readlines()
         period = max(5, args.period) if args.period else 5
 
-        new_lines = colourize(
+        gen = colourize(
             colour_space=colour_space, spec=spec, period=period, lines=lines
         )
-
-        print(*new_lines, sep="", end="")
+        for new_line in gen:
+            print(*new_line, sep="", end="")
 
 
 try:
