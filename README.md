@@ -6,7 +6,7 @@ Gayer version of [`lolcat`](https://github.com/busyloop/lolcat)
 
 ## Show me
 
-![flags.gif]()
+![flags.gif](https://raw.githubusercontent.com/ms-jpq/gay/%3C3/preview/flags.gif)
 
 ## Get Gay
 
