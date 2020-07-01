@@ -226,10 +226,9 @@ def paint_flag(colour_space: ColourSpace, spec: FlagSpec) -> Iterator[str]:
     line = " " * cols
     for hexc, l in spec.palette:
         colour = parse_colour(hexc)
-        esc_codes = decor(colour)
         for _ in range(0, l * m):
             yield bg_esc
-            yield from esc_codes
+            yield from decor(colour)
             yield "m"
             yield line
             yield "\033[0m"
