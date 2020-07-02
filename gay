@@ -12,7 +12,7 @@ from random import choice, randint
 from shutil import get_terminal_size
 from signal import SIG_DFL, SIGPIPE, signal
 from sys import stdin
-from typing import Callable, Dict, Iterator, List, Tuple, cast
+from typing import Callable, Dict, Iterator, List, Optional, Tuple, cast
 from unicodedata import east_asian_width
 
 
@@ -268,35 +268,32 @@ def unicode_width(char: str) -> int:
         return 1
 
 
-def enumerate_lines(stream: Iterator[str],) -> Iterator[Iterator[Tuple[int, str]]]:
+def enumerate_lines(stream: Iterator[str],) -> Iterator[Tuple[bool, int, str]]:
     x = 0
-    buf: List[Tuple[int, str]] = []
 
-    def drain() -> Iterator[Tuple[int, str]]:
-        yield from buf
-        buf.clear()
+    fst: Optional[str] = next(stream)
+    prev: Optional[Tuple[int, str]] = None if fst is None else (unicode_width(fst), fst)
+
+    def drain(ret: bool) -> Iterator[Tuple[bool, int, str]]:
+        if prev is not None:
+            yield (ret, *prev)
 
     for char in stream:
-        if char == "\n":
-            buf.append((0, char))
-            yield drain()
+        width = unicode_width(char)
+        new = x + width
+        if new > COLS:
+            yield from drain(True)
+            prev = (width, char)
+            x = width
+        elif new == COLS or char == "\n":
+            yield from drain(False)
+            yield True, width, char
             x = 0
         else:
-            width = unicode_width(char)
-            new = x + width
-            if new > COLS:
-                yield drain()
-                buf.append((width, char))
-                x = width
-            elif new == COLS:
-                buf.append((width, char))
-                yield drain()
-                x = 0
-            else:
-                buf.append((width, char))
-                x = new
-
-    yield iter(buf)
+            yield from drain(False)
+            prev = (width, char)
+            x = new
+    yield from drain(True)
 
 
 def interpolation_short(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
@@ -362,17 +359,18 @@ def colourize(
     stream: Iterator[str],
 ) -> Iterator[str]:
     fg_esc, _, decor = decor_for(colour_space)
-    for line in enumerate_lines(stream):
-        colour_gen = next(rgb_gen)
-
-        for width, char in line:
-            if width:
-                colour = next(colour_gen)
-                yield fg_esc
-                yield from decor(colour)
-                yield "m"
-            yield char
-        yield "\033[0m"
+    colour_gen = next(rgb_gen)
+    for new_line, width, char in enumerate_lines(stream):
+        if new_line:
+            colour_gen = next(rgb_gen)
+        if width:
+            colour = next(colour_gen)
+            yield fg_esc
+            yield from decor(colour)
+            yield "m"
+        yield char
+        if new_line:
+            yield "\033[0m"
 
 
 def main() -> None:
