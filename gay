@@ -10,7 +10,7 @@ from os import environ
 from random import choice, randint
 from shutil import get_terminal_size
 from signal import SIG_DFL, SIGPIPE, signal
-from sys import stdin, stderr
+from sys import stderr, stdin
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, cast
 from unicodedata import east_asian_width
 
@@ -240,13 +240,6 @@ def paint_flag(colour_space: ColourSpace, palette: Palette) -> Iterator[str]:
             yield "\n"
 
 
-def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
-    lhs = map(lambda c: c * mix, c1)
-    rhs = map(lambda c: c * (1 - mix), c2)
-    new = map(lambda c: int(round(sum(c))), zip(lhs, rhs))
-    return cast(RGB, tuple(new))
-
-
 def enumerate_lines(stream: Iterator[str]) -> Iterator[Tuple[bool, int, str]]:
 
     l_stream = unicode_width(stream)
@@ -277,11 +270,18 @@ def enumerate_lines(stream: Iterator[str]) -> Iterator[Tuple[bool, int, str]]:
     yield from drain(False)
 
 
+def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
+    lhs = map(lambda c: c * mix, c1)
+    rhs = map(lambda c: c * (1 - mix), c2)
+    new = map(lambda c: int(round(sum(c))), zip(lhs, rhs))
+    return cast(RGB, tuple(new))
+
+
 def interpolate_1d(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
     colours = cycle(palette)
     period = pi * pi / 2
 
-    def wave(t: float) -> float:
+    def sine_wave(t: float) -> float:
         x = t / rep * period
         return sin(x / pi + pi / 2)
 
@@ -290,7 +290,7 @@ def interpolate_1d(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
         while True:
             curr = next(colours)
             for t in range(rep + 1):
-                mix = wave(t)
+                mix = sine_wave(t)
                 yield lerp(prev, curr, mix)
             prev = curr
 
@@ -300,7 +300,9 @@ def interpolate_1d(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
 def interpolate_2d(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
     colours = cycle(palette)
 
-    prev = next(colours)
+    def euclidean(x1: int, y1: int, x2: int, y2: int) -> float:
+        return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+
     for y in count():
 
         def line() -> Iterator[RGB]:
