@@ -16,10 +16,6 @@ Gayer version of [`lolcat`](https://github.com/busyloop/lolcat)
 echo 'message' | gay
 ```
 
-```sh
---help
-```
-
 ![help.png](https://raw.githubusercontent.com/ms-jpq/gay/%3C3/preview/help.png)
 
 ```sh
