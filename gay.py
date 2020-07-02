@@ -49,7 +49,6 @@ RawPalette = List[Tuple[HexColour, int]]
 Palette = List[RGB]
 AspectRatio = Tuple[int, int]
 Position = Tuple[int, int]
-WindowsColorTerm = False
 
 
 @dataclass
@@ -250,7 +249,7 @@ def decor_24(rgb: RGB) -> Iterator[str]:
     
     
 def decor_for(space: ColourSpace) -> Tuple[str, str, Callable[[RGB], Iterator[str]]]:
-    if space == ColourSpace.EIGHT and WindowsColorTerm == True:
+    if space == ColourSpace.EIGHT or WindowsColorTerm == True:
         return "\x1b[38;5;", "\x1b[48;5;", decor_8
     elif space == ColourSpace.TRUE:
         return "\x1b[38;2;", "\x1b[48;2;", decor_24
