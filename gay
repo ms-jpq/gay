@@ -110,7 +110,8 @@ FLAG_SPECS: Dict[Flags, FlagSpec] = {
 
 
 def parse_args() -> Namespace:
-    rand_flag = choice([f for f in Flags])
+    rand_flag = choice(tuple(f for f in Flags))
+    rand_interpolation = choice(tuple(i.value for i in InterpolationMode))
     colour_space = (
         ColourSpace.TRUE
         if environ.get("COLORTERM") in {"truecolor", "24bit"}
@@ -169,7 +170,7 @@ def parse_args() -> Namespace:
         "-i",
         "--interpolation",
         choices=tuple(i.value for i in InterpolationMode),
-        default=InterpolationMode.LONG,
+        default=rand_interpolation,
     )
     opt_group.add_argument(
         "--period", type=lambda i: abs(int(i)), default=randint(5, 10)
