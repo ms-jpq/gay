@@ -82,7 +82,11 @@ FLAG_SPECS: Dict[Flags, FlagSpec] = {
         ],
     ),
     Flags.BI: FlagSpec(
-        aspect_ratio=(3, 5), palette=[("#D60270", 2), ("#9B4F96", 1), ("#0038A8", 2)],
+        aspect_ratio=(3, 5), palette=[
+            ("#D60270", 2),
+            ("#9B4F96", 1),
+            ("#0038A8", 2)
+        ],
     ),
     Flags.TRANS: FlagSpec(
         aspect_ratio=(3, 5),
@@ -96,17 +100,36 @@ FLAG_SPECS: Dict[Flags, FlagSpec] = {
     ),
     Flags.ACE: FlagSpec(
         aspect_ratio=(3, 5),
-        palette=[("#000000", 1), ("#A4A4A4", 1), ("#FFFFFF", 1), ("#810081", 1)],
+        palette=[
+            ("#000000", 1),
+            ("#A4A4A4", 1),
+            ("#FFFFFF", 1),
+            ("#810081", 1)
+        ],
     ),
     Flags.PAN: FlagSpec(
-        aspect_ratio=(3, 5), palette=[("#FF1B8D", 1), ("#FFDA00", 1), ("#1BB3FF", 1)],
+        aspect_ratio=(3, 5), palette=
+        [
+            ("#FF1B8D", 1),
+            ("#FFDA00", 1),
+            ("#1BB3FF", 1)
+        ],
     ),
     Flags.NB: FlagSpec(
         aspect_ratio=(3, 5),
-        palette=[("#FFF430", 1), ("#FFFFFF", 1), ("#9C59D1", 1), ("#000000", 1)],
+        palette=[
+            ("#FFF430", 1),
+            ("#FFFFFF", 1),
+            ("#9C59D1", 1),
+            ("#000000", 1)
+        ],
     ),
     Flags.GQ: FlagSpec(
-        aspect_ratio=(3, 5), palette=[("#B77FDD", 1), ("#FFFFFF", 1), ("#48821E", 1)]
+        aspect_ratio=(3, 5), palette=[
+        ("#B77FDD", 1),
+        ("#FFFFFF", 1),
+        ("#48821E", 1)
+        ]
     ),
 }
 
