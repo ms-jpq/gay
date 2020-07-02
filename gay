@@ -10,7 +10,7 @@ from os import environ
 from random import choice, randint
 from shutil import get_terminal_size
 from signal import SIG_DFL, SIGPIPE, signal
-from sys import stdin
+from sys import stdin, stderr
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, cast
 from unicodedata import east_asian_width
 
@@ -277,7 +277,7 @@ def enumerate_lines(stream: Iterator[str]) -> Iterator[Tuple[bool, int, str]]:
     yield from drain(False)
 
 
-def interpolation_short(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
+def interpolate_1d(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
     colours = cycle(palette)
     period = pi * pi / 2
 
@@ -297,7 +297,7 @@ def interpolation_short(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
     yield from repeat(once())
 
 
-def interpolation_long(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
+def interpolate_2d(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
     colours = cycle(palette)
 
     prev = next(colours)
@@ -317,10 +317,10 @@ def interpolation_for(
 ) -> Iterator[Iterator[RGB]]:
     if mode == Gradient.D1:
         period = rep or randint(5, 15)
-        return interpolation_short(palette, period)
+        return interpolate_1d(palette, period)
     if mode == Gradient.D2:
         period = rep or randint(3, 5)
-        return interpolation_long(palette, period)
+        return interpolate_2d(palette, period)
     else:
         raise ValueError()
 
