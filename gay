@@ -295,7 +295,11 @@ def enumerate_lines(stream: Iterator[str],) -> Iterator[Tuple[bool, int, str]]:
             yield from drain(False)
             prev = (width, char)
             x = new
-    yield from drain(True)
+
+    if prev is not None:
+        width, char = prev
+        new_line = x >= COLS or char == "\n"
+        yield new_line, width, char
 
 
 def interpolation_short(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
