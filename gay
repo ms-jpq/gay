@@ -278,7 +278,7 @@ def enumerate_lines(stream: Iterator[str],) -> Iterator[Tuple[bool, int, str]]:
         nonlocal prev
         if prev is not None:
             yield (ret, *prev)
-        prev = None
+            prev = None
 
     for char in stream:
         width = unicode_width(char)
