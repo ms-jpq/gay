@@ -16,11 +16,23 @@ Gayer version of [`lolcat`](https://github.com/busyloop/lolcat)
 echo 'message' | gay
 ```
 
+```sh
+--help
+```
+
 ![help.png](https://raw.githubusercontent.com/ms-jpq/gay/%3C3/preview/help.png)
 
-![dog.png](https://raw.githubusercontent.com/ms-jpq/gay/%3C3/preview/dog.png)
+```sh
+-i 1d, --interpolation 1d
+```
 
-![anthem.png](https://raw.githubusercontent.com/ms-jpq/gay/%3C3/preview/anthem.png)
+![1d.png](https://raw.githubusercontent.com/ms-jpq/gay/%3C3/preview/1d.png)
+
+```sh
+-i 2d, --interpolation 2d
+```
+
+![2d.png](https://raw.githubusercontent.com/ms-jpq/gay/%3C3/preview/2d.png)
 
 ### Flag
 
@@ -31,7 +43,6 @@ gay --flag
 Unlike the demo, it shows 1 flag and 1 flag only.
 
 ![flags.gif](https://raw.githubusercontent.com/ms-jpq/gay/%3C3/preview/flags.gif)
-
 
 ## Thank yous
 
