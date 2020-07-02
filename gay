@@ -3,7 +3,6 @@
 
 from argparse import ArgumentParser, Namespace
 from atexit import register
-from dataclasses import dataclass
 from enum import Enum
 from itertools import chain, cycle, islice, repeat
 from math import inf, pi, sin
@@ -39,15 +38,8 @@ class Flags(Enum):
 
 HexColour = str
 RGB = Tuple[int, int, int]
-RawPalette = List[Tuple[HexColour, int]]
+RawPalette = List[HexColour]
 Palette = List[RGB]
-AspectRatio = Tuple[int, int]
-
-
-@dataclass
-class FlagSpec:
-    aspect_ratio: AspectRatio
-    palette: RawPalette
 
 
 COLS, ROWS = get_terminal_size((80, 80))
@@ -57,55 +49,16 @@ UNICODE_WIDTH_LOOKUP = {
     "N": 0,  # Non printable
 }
 
-FLAG_SPECS: Dict[Flags, FlagSpec] = {
-    Flags.LES: FlagSpec(
-        aspect_ratio=(3, 5),
-        palette=[
-            ("#D62E02", 1),
-            ("#FD9855", 1),
-            ("#FFFFFF", 1),
-            ("#D161A2", 1),
-            ("#A20160", 1),
-        ],
-    ),
-    Flags.GAY: FlagSpec(
-        aspect_ratio=(3, 5),
-        palette=[
-            ("#FF0018", 1),
-            ("#FFA52C", 1),
-            ("#FFFF41", 1),
-            ("#008018", 1),
-            ("#0000F9", 1),
-            ("#86007D", 1),
-        ],
-    ),
-    Flags.BI: FlagSpec(
-        aspect_ratio=(3, 5), palette=[("#D60270", 2), ("#9B4F96", 1), ("#0038A8", 2)],
-    ),
-    Flags.TRANS: FlagSpec(
-        aspect_ratio=(3, 5),
-        palette=[
-            ("#55CDFC", 1),
-            ("#F7A8B8", 1),
-            ("#FFFFFF", 1),
-            ("#F7A8B8", 1),
-            ("#55CDFC", 1),
-        ],
-    ),
-    Flags.ACE: FlagSpec(
-        aspect_ratio=(3, 5),
-        palette=[("#000000", 1), ("#A4A4A4", 1), ("#FFFFFF", 1), ("#810081", 1)],
-    ),
-    Flags.PAN: FlagSpec(
-        aspect_ratio=(3, 5), palette=[("#FF1B8D", 1), ("#FFDA00", 1), ("#1BB3FF", 1)],
-    ),
-    Flags.NB: FlagSpec(
-        aspect_ratio=(3, 5),
-        palette=[("#FFF430", 1), ("#FFFFFF", 1), ("#9C59D1", 1), ("#000000", 1)],
-    ),
-    Flags.GQ: FlagSpec(
-        aspect_ratio=(3, 5), palette=[("#B77FDD", 1), ("#FFFFFF", 1), ("#48821E", 1)]
-    ),
+ASPECT_RATIO = (3, 5)
+FLAG_SPECS: Dict[Flags, RawPalette] = {
+    Flags.LES: ["#D62E02", "#FD9855", "#FFFFFF", "#D161A2", "#A20160"],
+    Flags.GAY: ["#FF0018", "#FFA52C", "#FFFF41", "#008018", "#0000F9", "#86007D"],
+    Flags.BI: ["#D60270", "#D60270", "#9B4F96", "#0038A8", "#0038A8"],
+    Flags.TRANS: ["#55CDFC", "#F7A8B8", "#FFFFFF", "#F7A8B8", "#55CDFC"],
+    Flags.ACE: ["#000000", "#A4A4A4", "#FFFFFF", "#810081"],
+    Flags.PAN: ["#FF1B8D", "#FFDA00", "#1BB3FF"],
+    Flags.NB: ["#FFF430", "#FFFFFF", "#9C59D1", "#000000"],
+    Flags.GQ: ["#B77FDD", "#FFFFFF", "#48821E"],
 }
 
 
@@ -212,10 +165,6 @@ def unicode_width(stream: Iterator[str]) -> Iterator[Tuple[int, str]]:
         yield char_width(char), char
 
 
-def flag_colours(flag: FlagSpec) -> Palette:
-    return [parse_colour(p) for p, _ in flag.palette]
-
-
 def parse_colour(colour: HexColour) -> RGB:
     hexc = colour[1:]
     it = iter(hexc)
@@ -244,17 +193,16 @@ def decor_for(space: ColourSpace) -> Tuple[str, str, Callable[[RGB], Iterator[st
         raise ValueError()
 
 
-def paint_flag(colour_space: ColourSpace, spec: FlagSpec) -> Iterator[str]:
+def paint_flag(colour_space: ColourSpace, palette: RawPalette) -> Iterator[str]:
+    r, c = ASPECT_RATIO
     _, bg_esc, decor = decor_for(colour_space)
-    r, c = spec.aspect_ratio
-    height = sum(h for _, h in spec.palette)
+    height = len(palette)
     ratio = r / c * 0.5
-    multiplier = int(min((ROWS - 4) / height, COLS / height * ratio))
-    m = max(multiplier, 1)
+    multiplier = max(int(min((ROWS - 4) / height, COLS / height * ratio)), 1)
     line = " " * COLS
-    for hexc, l in spec.palette:
-        colour = parse_colour(hexc)
-        for _ in range(0, l * m):
+    for p in palette:
+        colour = parse_colour(p)
+        for _ in range(multiplier):
             yield bg_esc
             yield from decor(colour)
             yield "m"
@@ -312,7 +260,7 @@ def interpolation_short(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
         prev = next(gen)
         while True:
             curr = next(gen)
-            for t in range(0, rep + 1):
+            for t in range(rep + 1):
                 mix = wave(t)
                 yield lerp(prev, curr, mix)
             prev = curr
@@ -331,7 +279,7 @@ def interpolation_long(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
         x = t / rep * period
         return sin(x / pi + pi / 2)
 
-    for y in range(0, inf):
+    for y in range(cast(int, inf)):
 
         def line() -> Iterator[RGB]:
             x = 0
@@ -342,24 +290,21 @@ def interpolation_long(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
 
 
 def interpolation_for(
-    mode: InterpolationMode, spec: FlagSpec, rep: Optional[int]
+    mode: InterpolationMode, palette: RawPalette, rep: Optional[int]
 ) -> Iterator[Iterator[RGB]]:
-    palette = flag_colours(spec)
+    colours = [parse_colour(p) for p in palette]
     if mode == InterpolationMode.SHORT:
         period = rep or randint(3, 10)
-        return interpolation_short(palette, period)
+        return interpolation_short(colours, period)
     if mode == InterpolationMode.LONG:
         period = rep or randint(3, 5)
-        return interpolation_long(palette, period)
+        return interpolation_long(colours, period)
     else:
         raise ValueError()
 
 
 def colourize(
-    colour_space: ColourSpace,
-    rgb_gen: Iterator[Iterator[RGB]],
-    spec: FlagSpec,
-    stream: Iterator[str],
+    colour_space: ColourSpace, rgb_gen: Iterator[Iterator[RGB]], stream: Iterator[str],
 ) -> Iterator[str]:
     fg_esc, _, decor = decor_for(colour_space)
     colour_gen = next(rgb_gen)
@@ -380,22 +325,21 @@ def main() -> None:
     args = parse_args()
     register(on_exit)
     colour_space = ColourSpace(args.colour)
-    spec = FLAG_SPECS[args.flag]
+    palette = FLAG_SPECS[args.flag]
 
     if args.flag_only:
-        flag_stripes = paint_flag(colour_space=colour_space, spec=spec)
+        flag_stripes = paint_flag(colour_space=colour_space, palette=palette)
         print(*flag_stripes, sep="", end="")
     else:
         stream = stdin_stream()
         normalized_stream = normalize_width(args.tabs, stream)
         interpolation = InterpolationMode(args.interpolation)
 
-        rgb_gen = interpolation_for(mode=interpolation, spec=spec, rep=args.period)
+        rgb_gen = interpolation_for(
+            mode=interpolation, palette=palette, rep=args.period
+        )
         gen = colourize(
-            colour_space=colour_space,
-            rgb_gen=rgb_gen,
-            spec=spec,
-            stream=normalized_stream,
+            colour_space=colour_space, rgb_gen=rgb_gen, stream=normalized_stream,
         )
         for chunk in iter(lambda: tuple(islice(gen, COLS)), ()):
             print(*chunk, sep="", end="")
