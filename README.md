@@ -6,7 +6,7 @@ Gayer version of [`lolcat`](https://github.com/busyloop/lolcat)
 
 ## [Get Gay](https://pypi.org/project/gay)
 
-`pip install gay`
+`pip install -U gay`
 
 ## Show me
 
