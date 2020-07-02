@@ -321,10 +321,10 @@ def interpolation_for(
     mode: Gradient, palette: Palette, rep: Optional[int]
 ) -> Iterator[Iterator[RGB]]:
     if mode == Gradient.D1:
-        period = rep or randint(5, 20)
+        period = rep or randint(10, 20)
         return interpolate_1d(palette, period)
     if mode == Gradient.D2:
-        period = rep or randint(5, 20)
+        period = rep or randint(10, 15)
         return interpolate_2d(palette, period)
     else:
         raise ValueError()

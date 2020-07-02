@@ -25,18 +25,26 @@ printf '\n\n'
 
 
 TEXT="$(< /dev/stdin)"
-./gay -l <<< "$TEXT"
+./gay -l -i 1d <<< "$TEXT"
+./gay -l -i 2d <<< "$TEXT"
 printf '\n\n'
-./gay -g <<< "$TEXT"
+./gay -g -i 1d <<< "$TEXT"
+./gay -g -i 2d <<< "$TEXT"
 printf '\n\n'
-./gay -b <<< "$TEXT"
+./gay -b -i 1d <<< "$TEXT"
+./gay -b -i 2d <<< "$TEXT"
 printf '\n\n'
-./gay -t <<< "$TEXT"
+./gay -t -i 1d <<< "$TEXT"
+./gay -t -i 2d <<< "$TEXT"
 printf '\n\n'
-./gay -a <<< "$TEXT"
+./gay -a -i 1d <<< "$TEXT"
+./gay -a -i 2d <<< "$TEXT"
 printf '\n\n'
-./gay -p <<< "$TEXT"
+./gay -p -i 1d <<< "$TEXT"
+./gay -p -i 2d <<< "$TEXT"
 printf '\n\n'
-./gay -n <<< "$TEXT"
+./gay -n -i 1d <<< "$TEXT"
+./gay -n -i 2d <<< "$TEXT"
 printf '\n\n'
-./gay --gq <<< "$TEXT"
+./gay --gq -i 1d <<< "$TEXT"
+./gay --gq -i 2d <<< "$TEXT"
