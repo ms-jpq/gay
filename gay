@@ -296,10 +296,7 @@ def enumerate_lines(stream: Iterator[str],) -> Iterator[Tuple[bool, int, str]]:
             prev = (width, char)
             x = new
 
-    if prev is not None:
-        width, char = prev
-        new_line = x >= COLS or char == "\n"
-        yield new_line, width, char
+    yield from drain(False)
 
 
 def interpolation_short(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
@@ -367,8 +364,6 @@ def colourize(
     fg_esc, _, decor = decor_for(colour_space)
     colour_gen = next(rgb_gen)
     for new_line, width, char in enumerate_lines(stream):
-        if new_line:
-            colour_gen = next(rgb_gen)
         if width:
             colour = next(colour_gen)
             yield fg_esc
@@ -377,6 +372,7 @@ def colourize(
         yield char
         if new_line:
             yield "\033[0m"
+            colour_gen = next(rgb_gen)
 
 
 def main() -> None:
