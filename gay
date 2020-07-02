@@ -126,7 +126,9 @@ def parse_args() -> Namespace:
         default=rand_interpolation,
     )
     opt_group.add_argument("--period", type=lambda i: max(abs(int(i)), 1))
-    opt_group.add_argument("--tabs", type=lambda i: max(abs(int(i)), 1), default=4)
+    opt_group.add_argument(
+        "--tabs", "--tab-width", type=lambda i: max(abs(int(i)), 1), default=4
+    )
 
     return parser.parse_args(namespace=namespace)
 
