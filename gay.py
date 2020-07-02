@@ -17,8 +17,9 @@ if platform == 'win32':
     from signal import signal, SIG_DFL
     from ctypes import windll
     WindowsColorTerm = True
-    k=windll.kernel32
-    k.SetConsoleMode(k.GetStdHandle(-11),7)
+    # k=windll.kernel32
+    # k.SetConsoleMode(k.GetStdHandle(-11),7)
+    # maybe not needed??
 else:
     from signal import signal, SIGPIPE, SIG_DFL
 
