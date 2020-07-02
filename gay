@@ -273,18 +273,27 @@ def enumerate_width(stream: Iterator[str],) -> Iterator[Iterator[Tuple[int, str]
     buf: List[Tuple[int, str]] = []
     for chunk in stream:
         for char in chunk:
-            width = unicode_width(char)
-            x += width
-            buf.append((width, char))
-
             if char == "\n":
+                buf.append((0, char))
+                yield iter(buf)
+                buf.clear()
                 x = 0
-                yield iter(buf)
-                buf.clear()
-            elif x >= COLS:
-                x -= COLS
-                yield iter(buf)
-                buf.clear()
+            else:
+                width = unicode_width(char)
+                new = x + width
+                if new > COLS:
+                    yield iter(buf)
+                    buf.clear()
+                    buf.append((width, char))
+                    x = width
+                elif new == COLS:
+                    buf.append((width, char))
+                    yield iter(buf)
+                    buf.clear()
+                    x = 0
+                else:
+                    buf.append((width, char))
+                    x = new
 
     yield iter(buf)
 
