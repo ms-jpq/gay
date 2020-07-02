@@ -321,6 +321,28 @@ def interpolation_short(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
         yield once()
 
 
+def interpolation_long(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
+    gen = cycle(palette)
+
+    period = pi * pi / 2
+
+    def wave(t: float) -> float:
+        x = t / rep * period
+        return sin(x / pi + pi / 2)
+
+    def once() -> Iterator[RGB]:
+        prev = next(gen)
+        while True:
+            curr = next(gen)
+            for t in range(0, rep + 1):
+                mix = wave(t)
+                yield lerp(prev, curr, mix)
+            prev = curr
+
+    while True:
+        yield once()
+
+
 def interpolation_for(
     mode: InterpolationMode, spec: FlagSpec, rep: int
 ) -> Iterator[Iterator[RGB]]:
@@ -328,7 +350,7 @@ def interpolation_for(
     if mode == InterpolationMode.SHORT:
         return interpolation_short(palette, rep)
     if mode == InterpolationMode.LONG:
-        return interpolation_short(palette, rep)
+        return interpolation_long(palette, rep)
     else:
         raise ValueError()
 
