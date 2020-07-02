@@ -274,9 +274,9 @@ def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
 
 def enumerate_lines(stream: Iterator[str]) -> Iterator[Tuple[bool, int, str]]:
 
-    fst: Optional[str] = next(stream, None)
-    prev: Optional[Tuple[int, str]] = None if fst is None else (unicode_width(fst), fst)
-    x = 1
+    l_stream = unicode_width(stream)
+    prev: Optional[Tuple[int, str]] = next(l_stream, None)
+    x = 0 if prev is None else 1
 
     def drain(ret: bool) -> Iterator[Tuple[bool, int, str]]:
         nonlocal prev
@@ -284,7 +284,7 @@ def enumerate_lines(stream: Iterator[str]) -> Iterator[Tuple[bool, int, str]]:
             yield (ret, *prev)
             prev = None
 
-    for width, char in unicode_width(stream):
+    for width, char in l_stream:
         new = x + width
         if new > COLS:
             yield from drain(True)
