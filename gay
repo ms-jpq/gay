@@ -4,7 +4,7 @@
 from argparse import ArgumentParser, Namespace
 from atexit import register
 from enum import Enum
-from itertools import chain, cycle, islice, repeat
+from itertools import chain, count, cycle, islice, repeat
 from math import inf, pi, sin
 from os import environ
 from random import choice, randint
@@ -279,11 +279,12 @@ def interpolation_long(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
         x = t / rep * period
         return sin(x / pi + pi / 2)
 
-    for y in range(cast(int, inf)):
+    for y in count():
 
         def line() -> Iterator[RGB]:
             x = 0
             while True:
+                yield (randint(0, 255), randint(0, 255), randint(0, 255))
                 x += 1
 
         yield line()
@@ -294,7 +295,7 @@ def interpolation_for(
 ) -> Iterator[Iterator[RGB]]:
     colours = [parse_colour(p) for p in palette]
     if mode == InterpolationMode.SHORT:
-        period = rep or randint(3, 10)
+        period = rep or randint(5, 15)
         return interpolation_short(colours, period)
     if mode == InterpolationMode.LONG:
         period = rep or randint(3, 5)
