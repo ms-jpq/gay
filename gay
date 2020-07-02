@@ -254,6 +254,15 @@ def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
     return cast(RGB, tuple(new))
 
 
+def normalize_width(tab_width: int, stream: Iterator[str]) -> Iterator[str]:
+    for chunk in stream:
+        for char in chunk:
+            if char == "\t":
+                yield from repeat(" ", tab_width)
+            else:
+                yield char
+
+
 def unicode_width(char: str) -> int:
     try:
         code = east_asian_width(char)
@@ -262,20 +271,14 @@ def unicode_width(char: str) -> int:
         return 1
 
 
-def enumerate_width(
-    tab_width: int, stream: Iterator[str],
-) -> Iterator[Iterator[Tuple[int, str]]]:
+def enumerate_width(stream: Iterator[str],) -> Iterator[Iterator[Tuple[int, str]]]:
     x = 0
     buf: List[Tuple[int, str]] = []
     for chunk in stream:
         for char in chunk:
-            if char == "\t":
-                x += tab_width
-                buf.extend(repeat((1, char), tab_width))
-            else:
-                width = unicode_width(char)
-                x += width
-                buf.append((width, char))
+            width = unicode_width(char)
+            x += width
+            buf.append((width, char))
 
             if char == "\n":
                 x = 0
@@ -308,16 +311,12 @@ def rgb_gen(palette: Palette, rep: int) -> Iterator[RGB]:
 
 
 def colourize(
-    colour_space: ColourSpace,
-    spec: FlagSpec,
-    tab_width: int,
-    period: int,
-    stream: Iterator[str],
+    colour_space: ColourSpace, spec: FlagSpec, period: int, stream: Iterator[str],
 ) -> Iterator[Iterator[str]]:
     palette = flag_colours(spec)
     colour_gen = rgb_gen(palette, period)
     fg_esc, _, decor = decor_for(colour_space)
-    for line in enumerate_width(tab_width, stream):
+    for line in enumerate_width(stream):
 
         def gen() -> Iterator[str]:
             for width, char in line:
@@ -344,15 +343,15 @@ def main() -> None:
         print(*flag_stripes, sep="", end="")
     else:
         stream = stdin_stream()
+        normalized_stream = normalize_width(args.tabs, stream)
         # interpolation = InterpolationMode(args.interpolation)
         period = max(5, args.period) if args.period else 5
 
         gen = colourize(
             colour_space=colour_space,
             spec=spec,
-            tab_width=args.tabs,
             period=period,
-            stream=stream,
+            stream=normalized_stream,
         )
         for chunk in gen:
             print(*chunk, sep="", end="")
