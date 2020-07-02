@@ -6,7 +6,7 @@ from atexit import register
 from dataclasses import dataclass
 from enum import Enum
 from itertools import chain, cycle, islice, repeat
-from math import pi, sin
+from math import inf, pi, sin
 from os import environ
 from random import choice, randint
 from shutil import get_terminal_size
@@ -172,10 +172,8 @@ def parse_args() -> Namespace:
         choices=tuple(i.value for i in InterpolationMode),
         default=rand_interpolation,
     )
-    opt_group.add_argument(
-        "--period", type=lambda i: abs(int(i)), default=randint(5, 10)
-    )
-    opt_group.add_argument("--tabs", type=lambda i: abs(int(i)), default=4)
+    opt_group.add_argument("--period", type=lambda i: max(abs(int(i)), 1))
+    opt_group.add_argument("--tabs", type=lambda i: max(abs(int(i)), 1), default=4)
 
     return parser.parse_args(namespace=namespace)
 
@@ -304,7 +302,6 @@ def enumerate_lines(stream: Iterator[str]) -> Iterator[Tuple[bool, int, str]]:
 
 def interpolation_short(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
     gen = cycle(palette)
-
     period = pi * pi / 2
 
     def wave(t: float) -> float:
@@ -320,8 +317,9 @@ def interpolation_short(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
                 yield lerp(prev, curr, mix)
             prev = curr
 
+    it = once()
     while True:
-        yield once()
+        yield it
 
 
 def interpolation_long(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
@@ -333,27 +331,26 @@ def interpolation_long(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
         x = t / rep * period
         return sin(x / pi + pi / 2)
 
-    def once() -> Iterator[RGB]:
-        prev = next(gen)
-        while True:
-            curr = next(gen)
-            for t in range(0, rep + 1):
-                mix = wave(t)
-                yield lerp(prev, curr, mix)
-            prev = curr
+    for y in range(0, inf):
 
-    while True:
-        yield once()
+        def line() -> Iterator[RGB]:
+            x = 0
+            while True:
+                x += 1
+
+        yield line()
 
 
 def interpolation_for(
-    mode: InterpolationMode, spec: FlagSpec, rep: int
+    mode: InterpolationMode, spec: FlagSpec, rep: Optional[int]
 ) -> Iterator[Iterator[RGB]]:
     palette = flag_colours(spec)
     if mode == InterpolationMode.SHORT:
-        return interpolation_short(palette, rep)
+        period = rep or randint(3, 10)
+        return interpolation_short(palette, period)
     if mode == InterpolationMode.LONG:
-        return interpolation_long(palette, rep)
+        period = rep or randint(3, 5)
+        return interpolation_long(palette, period)
     else:
         raise ValueError()
 
@@ -392,9 +389,8 @@ def main() -> None:
         stream = stdin_stream()
         normalized_stream = normalize_width(args.tabs, stream)
         interpolation = InterpolationMode(args.interpolation)
-        period = max(3, args.period) if args.period else 3
 
-        rgb_gen = interpolation_for(mode=interpolation, spec=spec, rep=period)
+        rgb_gen = interpolation_for(mode=interpolation, spec=spec, rep=args.period)
         gen = colourize(
             colour_space=colour_space,
             rgb_gen=rgb_gen,
