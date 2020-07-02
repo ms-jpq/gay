@@ -306,15 +306,13 @@ def interpolate_2d(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
     for y in count():
 
         def line() -> Iterator[RGB]:
-            x = 0
-            while True:
+            for x in count():
                 p = (x + 1.5 * y) / rep
                 i = int(p)
                 prev = palette[i % num]
                 curr = palette[(i + 1) % num]
                 mix = sine_wave(p - i)
                 yield lerp(prev, curr, mix)
-                x += 1
 
         yield line()
 
