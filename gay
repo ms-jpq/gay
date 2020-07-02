@@ -23,7 +23,7 @@ class ColourSpace(Enum):
 
 class InterpolationMode(Enum):
     SHORT = "short"
-    FULL = "full"
+    LONG = "long"
 
 
 class Flags(Enum):
@@ -170,7 +170,7 @@ def parse_args() -> Namespace:
         "-i",
         "--interpolation",
         choices=tuple(i.value for i in InterpolationMode),
-        default=InterpolationMode.FULL,
+        default=InterpolationMode.LONG,
     )
     opt_group.add_argument(
         "--period", type=lambda i: abs(int(i)), default=randint(5, 10)
