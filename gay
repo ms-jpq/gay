@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 from atexit import register
 from enum import Enum
 from itertools import chain, count, cycle, islice, repeat
-from math import inf, pi, sin
+from math import pi, sin
 from os import environ
 from random import choice, randint
 from shutil import get_terminal_size
@@ -165,13 +165,16 @@ def unicode_width(stream: Iterator[str]) -> Iterator[Tuple[int, str]]:
         yield char_width(char), char
 
 
-def parse_colour(colour: HexColour) -> RGB:
-    hexc = colour[1:]
-    it = iter(hexc)
-    parsed = tuple(
-        int(f"{h1}{h2}", 16) for h1, h2 in iter(lambda: tuple(islice(it, 2)), ())
-    )
-    return cast(RGB, parsed)
+def parse_raw_palette(raw: RawPalette) -> Palette:
+    def parse_colour(colour: HexColour) -> RGB:
+        hexc = colour[1:]
+        it = iter(hexc)
+        parsed = tuple(
+            int(f"{h1}{h2}", 16) for h1, h2 in iter(lambda: tuple(islice(it, 2)), ())
+        )
+        return cast(RGB, parsed)
+
+    return [parse_colour(p) for p in raw]
 
 
 def decor_8(rgb: RGB) -> Iterator[str]:
@@ -193,15 +196,14 @@ def decor_for(space: ColourSpace) -> Tuple[str, str, Callable[[RGB], Iterator[st
         raise ValueError()
 
 
-def paint_flag(colour_space: ColourSpace, palette: RawPalette) -> Iterator[str]:
+def paint_flag(colour_space: ColourSpace, palette: Palette) -> Iterator[str]:
     r, c = ASPECT_RATIO
     _, bg_esc, decor = decor_for(colour_space)
     height = len(palette)
     ratio = r / c * 0.5
     multiplier = max(int(min((ROWS - 4) / height, COLS / height * ratio)), 1)
     line = " " * COLS
-    for p in palette:
-        colour = parse_colour(p)
+    for colour in palette:
         for _ in range(multiplier):
             yield bg_esc
             yield from decor(colour)
@@ -291,15 +293,14 @@ def interpolation_long(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
 
 
 def interpolation_for(
-    mode: InterpolationMode, palette: RawPalette, rep: Optional[int]
+    mode: InterpolationMode, palette: Palette, rep: Optional[int]
 ) -> Iterator[Iterator[RGB]]:
-    colours = [parse_colour(p) for p in palette]
     if mode == InterpolationMode.SHORT:
         period = rep or randint(5, 15)
-        return interpolation_short(colours, period)
+        return interpolation_short(palette, period)
     if mode == InterpolationMode.LONG:
         period = rep or randint(3, 5)
-        return interpolation_long(colours, period)
+        return interpolation_long(palette, period)
     else:
         raise ValueError()
 
@@ -326,7 +327,7 @@ def main() -> None:
     args = parse_args()
     register(on_exit)
     colour_space = ColourSpace(args.colour)
-    palette = FLAG_SPECS[args.flag]
+    palette = parse_raw_palette(FLAG_SPECS[args.flag])
 
     if args.flag_only:
         flag_stripes = paint_flag(colour_space=colour_space, palette=palette)
