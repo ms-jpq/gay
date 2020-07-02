@@ -15,11 +15,10 @@ from typing import Callable, Dict, Iterator, List, Tuple, cast
 from unicodedata import east_asian_width
 if platform == 'win32':
     from signal import signal, SIG_DFL
-    from ctypes import windll
+    from ctypes import *
     WindowsColorTerm = True
-    # k=windll.kernel32
-    # k.SetConsoleMode(k.GetStdHandle(-11),7)
-    # maybe not needed??
+    k=windll.kernel32
+    k.SetConsoleMode(k.GetStdHandle(-11),7)
 else:
     from signal import signal, SIGPIPE, SIG_DFL
 
@@ -251,7 +250,7 @@ def decor_24(rgb: RGB) -> Iterator[str]:
     
 def decor_for(space: ColourSpace) -> Tuple[str, str, Callable[[RGB], Iterator[str]]]:
     if space == ColourSpace.EIGHT or WindowsColorTerm == True:
-        return "\x1b[38;5;", "\x1b[48;5;", decor_8
+        return "\x1b[38;5;m", "\x1b[48;5;m", decor_8
     elif space == ColourSpace.TRUE:
         return "\x1b[38;2;", "\x1b[48;2;", decor_24
     else:
