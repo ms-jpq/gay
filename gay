@@ -274,7 +274,7 @@ def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
 
 def enumerate_lines(stream: Iterator[str]) -> Iterator[Tuple[bool, int, str]]:
 
-    fst: Optional[str] = next(stream)
+    fst: Optional[str] = next(stream, None)
     prev: Optional[Tuple[int, str]] = None if fst is None else (unicode_width(fst), fst)
     x = 1
 
