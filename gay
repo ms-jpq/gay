@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 from atexit import register
 from dataclasses import dataclass
 from enum import Enum
-from itertools import cycle, islice, repeat
+from itertools import chain, cycle, islice, repeat
 from math import pi, sin
 from os import environ
 from random import choice, randint
@@ -50,6 +50,7 @@ class FlagSpec:
     palette: RawPalette
 
 
+BUF_SIZE = 99
 COLS, ROWS = get_terminal_size((80, 80))
 
 UNICODE_WIDTH_LOOKUP = {
@@ -185,7 +186,7 @@ def on_exit() -> None:
 
 def stdin_stream() -> Iterator[str]:
     while True:
-        line = stdin.read(100)
+        line = stdin.read(BUF_SIZE)
         if line:
             yield line
         else:
@@ -207,23 +208,19 @@ def parse_colour(colour: HexColour) -> RGB:
 
 def decor_8(rgb: RGB) -> Iterator[str]:
     r, g, b = map(lambda c: int(round(c / 255 * 5)), rgb)
+    yield ";"
     yield str(16 + 36 * r + 6 * g + b)
 
 
 def decor_24(rgb: RGB) -> Iterator[str]:
-    r, g, b = map(str, rgb)
-    yield r
-    yield ";"
-    yield g
-    yield ";"
-    yield b
+    yield from chain(*zip(repeat(";"), map(str, rgb)))
 
 
 def decor_for(space: ColourSpace) -> Tuple[str, str, Callable[[RGB], Iterator[str]]]:
     if space == ColourSpace.EIGHT:
-        return "\033[38;5;", "\033[48;5;", decor_8
+        return "\033[38;5", "\033[48;5", decor_8
     elif space == ColourSpace.TRUE:
-        return "\033[38;2;", "\033[48;2;", decor_24
+        return "\033[38;2", "\033[48;2", decor_24
     else:
         raise ValueError()
 
@@ -353,8 +350,8 @@ def main() -> None:
             period=period,
             stream=normalized_stream,
         )
-        for chunk in gen:
-            print(*chunk, sep="", end="")
+        for line in gen:
+            print(*line, sep="", end="")
 
 
 try:
