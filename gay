@@ -281,7 +281,7 @@ def enumerate_width(
                 x = 0
                 yield iter(buf)
                 buf.clear()
-            elif x > COLS:
+            elif x >= COLS:
                 x -= COLS
                 yield iter(buf)
                 buf.clear()
