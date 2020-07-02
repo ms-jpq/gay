@@ -50,7 +50,6 @@ class FlagSpec:
     palette: RawPalette
 
 
-BUF_SIZE = 99
 COLS, ROWS = get_terminal_size((80, 80))
 
 UNICODE_WIDTH_LOOKUP = {
@@ -186,7 +185,7 @@ def on_exit() -> None:
 
 def stdin_stream() -> Iterator[str]:
     while True:
-        line = stdin.read(BUF_SIZE)
+        line = stdin.read(COLS)
         if line:
             yield line
         else:
@@ -351,7 +350,7 @@ def main() -> None:
         stream = stdin_stream()
         normalized_stream = normalize_width(args.tabs, stream)
         # interpolation = InterpolationMode(args.interpolation)
-        period = max(5, args.period) if args.period else 5
+        period = max(3, args.period) if args.period else 3
 
         gen = colourize(
             colour_space=colour_space,
