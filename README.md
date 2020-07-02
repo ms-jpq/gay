@@ -31,3 +31,10 @@ gay --flag
 Unlike the demo, it shows 1 flag and 1 flag only.
 
 ![flags.gif](https://raw.githubusercontent.com/ms-jpq/gay/%3C3/preview/flags.gif)
+
+
+## Thank yous
+
+(nshepperd)[https://github.com/nshepperd] for helping with 2D gradient
+
+(wrennnnnn)[https://github.com/wrennnnnn] for helping with windows
