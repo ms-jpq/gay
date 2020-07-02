@@ -14,9 +14,14 @@ from sys import stdin, platform
 from typing import Callable, Dict, Iterator, List, Tuple, cast
 from unicodedata import east_asian_width
 if platform == 'win32':
-  from signal import signal, SIG_DFL
+    from signal import signal, SIG_DFL
+    from ctypes import windll
+    WindowsColorTerm = True
+    k=windll.kernel32
+    k.SetConsoleMode(k.GetStdHandle(-11),7)
 else:
-  from signal import signal, SIGPIPE, SIG_DFL
+    from signal import signal, SIGPIPE, SIG_DFL
+
 class ColourSpace(Enum):
     EIGHT = "8"
     TRUE = "24"
@@ -44,13 +49,13 @@ RawPalette = List[Tuple[HexColour, int]]
 Palette = List[RGB]
 AspectRatio = Tuple[int, int]
 Position = Tuple[int, int]
+WindowsColorTerm = False
 
 
 @dataclass
 class FlagSpec:
     aspect_ratio: AspectRatio
     palette: RawPalette
-
 
 DEFAULT_TERM_SIZE = (80, 80)
 
@@ -205,7 +210,7 @@ def parse_args() -> Namespace:
 
 
 def on_exit() -> None:
-    print("\033[0m", end="", flush=True)
+    print("\x1b[0m", end="", flush=True)
 
 
 def readlines() -> Iterator[str]:
@@ -242,13 +247,13 @@ def decor_24(rgb: RGB) -> Iterator[str]:
     yield g
     yield ";"
     yield b
-
-
+    
+    
 def decor_for(space: ColourSpace) -> Tuple[str, str, Callable[[RGB], Iterator[str]]]:
-    if space == ColourSpace.EIGHT:
-        return "\033[38;5;", "\033[48;5;", decor_8
+    if space == ColourSpace.EIGHT && WindowsColorTerm == True:
+        return "\x1b[38;5;", "\x1b[48;5;", decor_8
     elif space == ColourSpace.TRUE:
-        return "\033[38;2;", "\033[48;2;", decor_24
+        return "\x1b[38;2;", "\x1b[48;2;", decor_24
     else:
         raise ValueError()
 
@@ -269,7 +274,7 @@ def paint_flag(colour_space: ColourSpace, spec: FlagSpec) -> Iterator[str]:
             yield from decor(colour)
             yield "m"
             yield line
-            yield "\033[0m"
+            yield "\x1b[0m"
             yield "\n"
 
 
@@ -348,7 +353,7 @@ def colourize(
                 yield from decor(colour)
                 yield "m"
                 yield char
-            yield "\033[0m"
+            yield "\x1b[0m"
             yield "\n"
 
         yield gen()
