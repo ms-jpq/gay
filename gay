@@ -186,8 +186,8 @@ def on_exit() -> None:
 
 def stdin_stream() -> Iterator[str]:
     while True:
-        size = COLS * 8
-        line = stdin.read(size)
+        size = COLS * 2
+        line = stdin.readline(size)
         if line:
             yield from line
         else:
