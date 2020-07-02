@@ -278,9 +278,9 @@ def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
 
 
 def sine_wave(t: float) -> float:
-    period = pi * pi / 2
+    period = pi * pi
     x = t * period
-    return sin(x / pi + pi / 2)
+    return (sin(x / pi + pi / 2) + 1) / 2
 
 
 def interpolate_1d(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
