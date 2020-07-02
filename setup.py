@@ -16,6 +16,6 @@ setup(
     long_description_content_type="text/markdown",
     author="ms-jpq",
     author_email="github@bigly.dog",
-    url="https://github.com/ms-jpq/gay",
+    url="https://github.com/wrennnnnn/gay",
     scripts=["gay"],
 )
