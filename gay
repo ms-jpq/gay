@@ -137,7 +137,7 @@ def on_exit() -> None:
 
 def stdin_stream() -> Iterator[str]:
     while True:
-        size = COLS * 2
+        size = COLS * 4
         line = stdin.read(size)
         if line:
             yield from line
@@ -177,39 +177,64 @@ def parse_raw_palette(raw: RawPalette) -> Palette:
     return [parse_colour(p) for p in raw]
 
 
-def decor_8(rgb: RGB) -> Iterator[str]:
-    r, g, b = map(lambda c: int(round(c / 255 * 5)), rgb)
-    yield ";"
-    yield str(16 + 36 * r + 6 * g + b)
+DecorateChar = Callable[[RGB], Iterator[str]]
+DecorateReset = Callable[[], Iterator[str]]
 
 
-def decor_24(rgb: RGB) -> Iterator[str]:
-    yield from chain(*zip(repeat(";"), map(str, rgb)))
+def decor_for(space: ColourSpace) -> Tuple[DecorateChar, DecorateChar, DecorateReset]:
+    def reset() -> Iterator[str]:
+        yield "\033[0m"
 
+    def decor_8(rgb: RGB) -> Iterator[str]:
+        r, g, b = map(lambda c: int(round(c / 255 * 5)), rgb)
+        yield ";"
+        yield str(16 + 36 * r + 6 * g + b)
 
-def decor_for(space: ColourSpace) -> Tuple[str, str, Callable[[RGB], Iterator[str]]]:
+    def decor_24(rgb: RGB) -> Iterator[str]:
+        yield from chain(*zip(repeat(";"), map(str, rgb)))
+
     if space == ColourSpace.EIGHT:
-        return "\033[38;5", "\033[48;5", decor_8
+
+        def fg(colour: RGB) -> Iterator[str]:
+            yield "\033[38;5"
+            yield from decor_8(colour)
+            yield "m"
+
+        def bg(colour: RGB) -> Iterator[str]:
+            yield "\033[48;5"
+            yield from decor_8(colour)
+            yield "m"
+
+        return fg, bg, reset
     elif space == ColourSpace.TRUE:
-        return "\033[38;2", "\033[48;2", decor_24
+
+        def fg(colour: RGB) -> Iterator[str]:
+            yield "\033[38;2"
+            yield from decor_24(colour)
+            yield "m"
+
+        def bg(colour: RGB) -> Iterator[str]:
+            yield "\033[48;2"
+            yield from decor_24(colour)
+            yield "m"
+
+        return fg, bg, reset
     else:
         raise ValueError()
 
 
 def paint_flag(colour_space: ColourSpace, palette: Palette) -> Iterator[str]:
     r, c = ASPECT_RATIO
-    _, bg_esc, decor = decor_for(colour_space)
+    _, bg, reset = decor_for(colour_space)
     height = len(palette)
     ratio = r / c * 0.5
     multiplier = max(int(min((ROWS - 4) / height, COLS / height * ratio)), 1)
     line = " " * COLS
     for colour in palette:
         for _ in range(multiplier):
-            yield bg_esc
-            yield from decor(colour)
-            yield "m"
+            yield from bg(colour)
             yield line
-            yield "\033[0m"
+            yield from reset()
             yield "\n"
 
 
@@ -251,7 +276,7 @@ def enumerate_lines(stream: Iterator[str]) -> Iterator[Tuple[bool, int, str]]:
 
 
 def interpolation_short(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
-    gen = cycle(palette)
+    colours = cycle(palette)
     period = pi * pi / 2
 
     def wave(t: float) -> float:
@@ -259,34 +284,27 @@ def interpolation_short(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
         return sin(x / pi + pi / 2)
 
     def once() -> Iterator[RGB]:
-        prev = next(gen)
+        prev = next(colours)
         while True:
-            curr = next(gen)
+            curr = next(colours)
             for t in range(rep + 1):
                 mix = wave(t)
                 yield lerp(prev, curr, mix)
             prev = curr
 
-    it = once()
-    while True:
-        yield it
+    yield from repeat(once())
 
 
 def interpolation_long(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
-    gen = cycle(palette)
+    colours = cycle(palette)
 
-    period = pi * pi / 2
-
-    def wave(t: float) -> float:
-        x = t / rep * period
-        return sin(x / pi + pi / 2)
-
+    prev = next(colours)
     for y in count():
 
         def line() -> Iterator[RGB]:
             x = 0
             while True:
-                yield (randint(0, 255), randint(0, 255), randint(0, 255))
+                yield next(colours)
                 x += 1
 
         yield line()
@@ -308,17 +326,15 @@ def interpolation_for(
 def colourize(
     colour_space: ColourSpace, rgb_gen: Iterator[Iterator[RGB]], stream: Iterator[str],
 ) -> Iterator[str]:
-    fg_esc, _, decor = decor_for(colour_space)
+    fg, _, reset = decor_for(colour_space)
     colour_gen = next(rgb_gen)
     for new_line, width, char in enumerate_lines(stream):
         if width:
             colour = next(colour_gen)
-            yield fg_esc
-            yield from decor(colour)
-            yield "m"
+            yield from fg(colour)
         yield char
         if new_line:
-            yield "\033[0m"
+            yield from reset()
             colour_gen = next(rgb_gen)
 
 
