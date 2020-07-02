@@ -19,7 +19,7 @@ rep() {
   local num="$1"
   local ch="$2"
   local acc=''
-  for ((i=0; i<COLS; i++))
+  for ((i=0; i<num; i++))
   do
     acc="$acc$ch"
   done
