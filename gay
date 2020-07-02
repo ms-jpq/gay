@@ -186,11 +186,20 @@ def on_exit() -> None:
 
 def stdin_stream() -> Iterator[str]:
     while True:
-        line = stdin.read(COLS)
+        size = COLS * 8
+        line = stdin.read(size)
         if line:
-            yield line
+            yield from line
         else:
             break
+
+
+def normalize_width(tab_width: int, stream: Iterator[str]) -> Iterator[str]:
+    for char in stream:
+        if char == "\t":
+            yield from repeat(" ", tab_width)
+        else:
+            yield char
 
 
 def flag_colours(flag: FlagSpec) -> Palette:
@@ -251,15 +260,6 @@ def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
     return cast(RGB, tuple(new))
 
 
-def normalize_width(tab_width: int, stream: Iterator[str]) -> Iterator[str]:
-    for chunk in stream:
-        for char in chunk:
-            if char == "\t":
-                yield from repeat(" ", tab_width)
-            else:
-                yield char
-
-
 def unicode_width(char: str) -> int:
     try:
         code = east_asian_width(char)
@@ -276,26 +276,25 @@ def enumerate_lines(stream: Iterator[str],) -> Iterator[Iterator[Tuple[int, str]
         yield from buf
         buf.clear()
 
-    for chunk in stream:
-        for char in chunk:
-            if char == "\n":
-                buf.append((0, char))
+    for char in stream:
+        if char == "\n":
+            buf.append((0, char))
+            yield drain()
+            x = 0
+        else:
+            width = unicode_width(char)
+            new = x + width
+            if new > COLS:
+                yield drain()
+                buf.append((width, char))
+                x = width
+            elif new == COLS:
+                buf.append((width, char))
                 yield drain()
                 x = 0
             else:
-                width = unicode_width(char)
-                new = x + width
-                if new > COLS:
-                    yield drain()
-                    buf.append((width, char))
-                    x = width
-                elif new == COLS:
-                    buf.append((width, char))
-                    yield drain()
-                    x = 0
-                else:
-                    buf.append((width, char))
-                    x = new
+                buf.append((width, char))
+                x = new
 
     yield iter(buf)
 
@@ -361,22 +360,19 @@ def colourize(
     rgb_gen: Iterator[Iterator[RGB]],
     spec: FlagSpec,
     stream: Iterator[str],
-) -> Iterator[Iterator[str]]:
+) -> Iterator[str]:
     fg_esc, _, decor = decor_for(colour_space)
     for line in enumerate_lines(stream):
         colour_gen = next(rgb_gen)
 
-        def gen() -> Iterator[str]:
-            for width, char in line:
-                if width:
-                    colour = next(colour_gen)
-                    yield fg_esc
-                    yield from decor(colour)
-                    yield "m"
-                yield char
-            yield "\033[0m"
-
-        yield gen()
+        for width, char in line:
+            if width:
+                colour = next(colour_gen)
+                yield fg_esc
+                yield from decor(colour)
+                yield "m"
+            yield char
+        yield "\033[0m"
 
 
 def main() -> None:
@@ -402,8 +398,8 @@ def main() -> None:
             spec=spec,
             stream=normalized_stream,
         )
-        for line in gen:
-            print(*line, sep="", end="")
+        for chunk in iter(lambda: tuple(islice(gen, COLS)), ()):
+            print(*chunk, sep="", end="")
 
 
 try:
