@@ -20,9 +20,9 @@ class ColourSpace(Enum):
     TRUE = "24"
 
 
-class InterpolationMode(Enum):
-    SHORT = "short"
-    LONG = "long"
+class Gradient(Enum):
+    D1 = "1d"
+    D2 = "2d"
 
 
 class Flags(Enum):
@@ -64,7 +64,7 @@ FLAG_SPECS: Dict[Flags, RawPalette] = {
 
 def parse_args() -> Namespace:
     rand_flag = choice(tuple(f for f in Flags))
-    rand_interpolation = choice(tuple(i.value for i in InterpolationMode))
+    rand_interpolation = choice(tuple(i.value for i in Gradient))
     colour_space = (
         ColourSpace.TRUE
         if environ.get("COLORTERM") in {"truecolor", "24bit"}
@@ -122,7 +122,7 @@ def parse_args() -> Namespace:
     opt_group.add_argument(
         "-i",
         "--interpolation",
-        choices=tuple(i.value for i in InterpolationMode),
+        choices=tuple(i.value for i in Gradient),
         default=rand_interpolation,
     )
     opt_group.add_argument("--period", type=lambda i: max(abs(int(i)), 1))
@@ -293,12 +293,12 @@ def interpolation_long(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
 
 
 def interpolation_for(
-    mode: InterpolationMode, palette: Palette, rep: Optional[int]
+    mode: Gradient, palette: Palette, rep: Optional[int]
 ) -> Iterator[Iterator[RGB]]:
-    if mode == InterpolationMode.SHORT:
+    if mode == Gradient.D1:
         period = rep or randint(5, 15)
         return interpolation_short(palette, period)
-    if mode == InterpolationMode.LONG:
+    if mode == Gradient.D2:
         period = rep or randint(3, 5)
         return interpolation_long(palette, period)
     else:
@@ -335,7 +335,7 @@ def main() -> None:
     else:
         stream = stdin_stream()
         normalized_stream = normalize_width(args.tabs, stream)
-        interpolation = InterpolationMode(args.interpolation)
+        interpolation = Gradient(args.interpolation)
 
         rgb_gen = interpolation_for(
             mode=interpolation, palette=palette, rep=args.period
