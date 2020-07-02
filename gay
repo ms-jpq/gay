@@ -269,10 +269,10 @@ def unicode_width(char: str) -> int:
 
 
 def enumerate_lines(stream: Iterator[str],) -> Iterator[Tuple[bool, int, str]]:
-    x = 0
 
     fst: Optional[str] = next(stream)
     prev: Optional[Tuple[int, str]] = None if fst is None else (unicode_width(fst), fst)
+    x = 1
 
     def drain(ret: bool) -> Iterator[Tuple[bool, int, str]]:
         nonlocal prev

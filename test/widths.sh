@@ -31,6 +31,9 @@ rep $((COLS - 1)) '-'
 pr '王'
 ret
 
+rep $((COLS - 1)) '-'
+pr '王'
+ret
 
 rep $((COLS - 1)) '-'
 pr '🏳️‍🌈'
