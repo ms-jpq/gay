@@ -297,7 +297,7 @@ def enumerate_lines(stream: Iterator[str],) -> Iterator[Iterator[Tuple[int, str]
     yield iter(buf)
 
 
-def rgb_gen(palette: Palette, rep: int) -> Iterator[RGB]:
+def interpolation_short(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
     gen = cycle(palette)
 
     period = pi * pi / 2
@@ -306,22 +306,40 @@ def rgb_gen(palette: Palette, rep: int) -> Iterator[RGB]:
         x = t / rep * period
         return sin(x / pi + pi / 2)
 
-    prev = next(gen)
+    def once() -> Iterator[RGB]:
+        prev = next(gen)
+        while True:
+            curr = next(gen)
+            for t in range(0, rep + 1):
+                mix = wave(t)
+                yield lerp(prev, curr, mix)
+            prev = curr
+
     while True:
-        curr = next(gen)
-        for t in range(0, rep + 1):
-            mix = wave(t)
-            yield lerp(prev, curr, mix)
-        prev = curr
+        yield once()
+
+
+def interpolation_for(
+    mode: InterpolationMode, spec: FlagSpec, rep: int
+) -> Iterator[Iterator[RGB]]:
+    palette = flag_colours(spec)
+    if mode == InterpolationMode.SHORT:
+        return interpolation_short(palette, rep)
+    if mode == InterpolationMode.LONG:
+        return interpolation_short(palette, rep)
+    else:
+        raise ValueError()
 
 
 def colourize(
-    colour_space: ColourSpace, spec: FlagSpec, period: int, stream: Iterator[str],
+    colour_space: ColourSpace,
+    rgb_gen: Iterator[Iterator[RGB]],
+    spec: FlagSpec,
+    stream: Iterator[str],
 ) -> Iterator[Iterator[str]]:
-    palette = flag_colours(spec)
-    colour_gen = rgb_gen(palette, period)
     fg_esc, _, decor = decor_for(colour_space)
     for line in enumerate_lines(stream):
+        colour_gen = next(rgb_gen)
 
         def gen() -> Iterator[str]:
             for width, char in line:
@@ -349,13 +367,14 @@ def main() -> None:
     else:
         stream = stdin_stream()
         normalized_stream = normalize_width(args.tabs, stream)
-        # interpolation = InterpolationMode(args.interpolation)
+        interpolation = InterpolationMode(args.interpolation)
         period = max(3, args.period) if args.period else 3
 
+        rgb_gen = interpolation_for(mode=interpolation, spec=spec, rep=period)
         gen = colourize(
             colour_space=colour_space,
+            rgb_gen=rgb_gen,
             spec=spec,
-            period=period,
             stream=normalized_stream,
         )
         for line in gen:
