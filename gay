@@ -163,13 +163,13 @@ def parse_args() -> Namespace:
     opt_group.add_argument(
         "-c",
         "--colour",
-        choices=(c.value for c in ColourSpace),
+        choices=tuple(c.value for c in ColourSpace),
         default=colour_space.value,
     )
     opt_group.add_argument(
         "-i",
         "--interpolation",
-        choices=[i.value for i in InterpolationMode],
+        choices=tuple(i.value for i in InterpolationMode),
         default=InterpolationMode.FULL,
     )
     opt_group.add_argument(
