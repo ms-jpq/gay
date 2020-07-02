@@ -277,38 +277,43 @@ def lerp(c1: RGB, c2: RGB, mix: float) -> RGB:
     return cast(RGB, tuple(new))
 
 
+def sine_wave(t: float) -> float:
+    period = pi * pi / 2
+    x = t * period
+    return sin(x / pi + pi / 2)
+
+
 def interpolate_1d(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
     colours = cycle(palette)
-    period = pi * pi / 2
-
-    def sine_wave(t: float) -> float:
-        x = t / rep * period
-        return sin(x / pi + pi / 2)
 
     def once() -> Iterator[RGB]:
         prev = next(colours)
         while True:
             curr = next(colours)
             for t in range(rep + 1):
-                mix = sine_wave(t)
+                mix = sine_wave(t / rep)
                 yield lerp(prev, curr, mix)
             prev = curr
 
     yield from repeat(once())
 
 
+# contributed by https://github.com/nshepperd
+# https://github.com/ms-jpq/gay/issues/2
 def interpolate_2d(palette: Palette, rep: int) -> Iterator[Iterator[RGB]]:
-    colours = cycle(palette)
-
-    def euclidean(x1: int, y1: int, x2: int, y2: int) -> float:
-        return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+    num = len(palette)
 
     for y in count():
 
         def line() -> Iterator[RGB]:
             x = 0
             while True:
-                yield next(colours)
+                p = (x + 1.5 * y) / rep
+                i = int(p)
+                prev = palette[i % num]
+                curr = palette[(i + 1) % num]
+                mix = sine_wave(p - i)
+                yield lerp(prev, curr, mix)
                 x += 1
 
         yield line()
@@ -318,10 +323,10 @@ def interpolation_for(
     mode: Gradient, palette: Palette, rep: Optional[int]
 ) -> Iterator[Iterator[RGB]]:
     if mode == Gradient.D1:
-        period = rep or randint(5, 15)
+        period = rep or randint(5, 20)
         return interpolate_1d(palette, period)
     if mode == Gradient.D2:
-        period = rep or randint(3, 5)
+        period = rep or randint(5, 20)
         return interpolate_2d(palette, period)
     else:
         raise ValueError()
