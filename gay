@@ -270,25 +270,27 @@ def unicode_width(char: str) -> int:
 def enumerate_lines(stream: Iterator[str],) -> Iterator[Iterator[Tuple[int, str]]]:
     x = 0
     buf: List[Tuple[int, str]] = []
+
+    def drain() -> Iterator[Tuple[int, str]]:
+        yield from buf
+        buf.clear()
+
     for chunk in stream:
         for char in chunk:
             if char == "\n":
                 buf.append((0, char))
-                yield iter(buf)
-                buf.clear()
+                yield drain()
                 x = 0
             else:
                 width = unicode_width(char)
                 new = x + width
                 if new > COLS:
-                    yield iter(buf)
-                    buf.clear()
+                    yield drain()
                     buf.append((width, char))
                     x = width
                 elif new == COLS:
                     buf.append((width, char))
-                    yield iter(buf)
-                    buf.clear()
+                    yield drain()
                     x = 0
                 else:
                     buf.append((width, char))
