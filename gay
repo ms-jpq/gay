@@ -268,7 +268,7 @@ def unicode_width(char: str) -> int:
         return 1
 
 
-def enumerate_width(stream: Iterator[str],) -> Iterator[Iterator[Tuple[int, str]]]:
+def enumerate_lines(stream: Iterator[str],) -> Iterator[Iterator[Tuple[int, str]]]:
     x = 0
     buf: List[Tuple[int, str]] = []
     for chunk in stream:
@@ -322,7 +322,7 @@ def colourize(
     palette = flag_colours(spec)
     colour_gen = rgb_gen(palette, period)
     fg_esc, _, decor = decor_for(colour_space)
-    for line in enumerate_width(stream):
+    for line in enumerate_lines(stream):
 
         def gen() -> Iterator[str]:
             for width, char in line:
