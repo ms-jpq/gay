@@ -7,10 +7,10 @@ from enum import Enum
 from itertools import chain, count, cycle, islice, repeat
 from math import pi, sin
 from os import environ
+from platform import system
 from random import choice, randint
 from shutil import get_terminal_size
-from signal import SIG_DFL, SIGPIPE, signal
-from sys import stderr, stdin
+from sys import stdin
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, cast
 from unicodedata import east_asian_width
 
@@ -41,7 +41,7 @@ RGB = Tuple[int, int, int]
 RawPalette = List[HexColour]
 Palette = List[RGB]
 
-
+WINDOWS = system() == "Windows"
 COLS, ROWS = get_terminal_size((80, 80))
 
 UNICODE_WIDTH_LOOKUP = {
@@ -131,6 +131,13 @@ def parse_args() -> Namespace:
     )
 
     return parser.parse_args(namespace=namespace)
+
+
+def trap_sig() -> None:
+    if not WINDOWS:
+        from signal import SIG_DFL, SIGPIPE, signal
+
+        signal(SIGPIPE, SIG_DFL)
 
 
 def on_exit() -> None:
@@ -346,7 +353,7 @@ def colourize(
 
 
 def main() -> None:
-    signal(SIGPIPE, SIG_DFL)
+    trap_sig()
     args = parse_args()
     register(on_exit)
     colour_space = ColourSpace(args.colour)
