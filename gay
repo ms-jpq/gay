@@ -19,10 +19,16 @@ class ColourSpace(Enum):
     EIGHT = "8"
     TRUE = "24"
 
+    def __str__(self) -> str:
+        return self.value
+
 
 class Gradient(Enum):
     D1 = "1d"
     D2 = "2d"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 class Flags(Enum):
@@ -63,13 +69,12 @@ FLAG_SPECS: Dict[Flags, RawPalette] = {
 
 
 def parse_args() -> Namespace:
-    rand_flag = choice(tuple(f for f in Flags))
-    rand_interpolation = choice(tuple(i.value for i in Gradient))
     colour_space = (
         ColourSpace.TRUE
         if environ.get("COLORTERM") in {"truecolor", "24bit"}
         else ColourSpace.EIGHT
     )
+    rand_flag = choice(tuple(Flags))
     namespace = Namespace(flag=rand_flag)
     parser = ArgumentParser()
 
@@ -116,14 +121,16 @@ def parse_args() -> Namespace:
     opt_group.add_argument(
         "-c",
         "--colour",
-        choices=tuple(c.value for c in ColourSpace),
+        type=ColourSpace,
+        choices=tuple(ColourSpace),
         default=colour_space.value,
     )
     opt_group.add_argument(
         "-i",
         "--interpolation",
-        choices=tuple(i.value for i in Gradient),
-        default=rand_interpolation,
+        type=Gradient,
+        choices=tuple(Gradient),
+        default=choice(tuple(Gradient)),
     )
     opt_group.add_argument("--period", type=lambda i: max(abs(int(i)), 1))
     opt_group.add_argument(
@@ -356,22 +363,20 @@ def main() -> None:
     trap_sig()
     args = parse_args()
     register(on_exit)
-    colour_space = ColourSpace(args.colour)
     palette = parse_raw_palette(FLAG_SPECS[args.flag])
 
     if args.flag_only:
-        flag_stripes = paint_flag(colour_space=colour_space, palette=palette)
+        flag_stripes = paint_flag(colour_space=args.colour, palette=palette)
         print(*flag_stripes, sep="", end="")
     else:
         stream = stdin_stream()
         normalized_stream = normalize_width(args.tabs, stream)
-        interpolation = Gradient(args.interpolation)
 
         rgb_gen = interpolation_for(
-            mode=interpolation, palette=palette, rep=args.period
+            mode=args.interpolation, palette=palette, rep=args.period
         )
         gen = colourize(
-            colour_space=colour_space, rgb_gen=rgb_gen, stream=normalized_stream,
+            colour_space=args.colour, rgb_gen=rgb_gen, stream=normalized_stream,
         )
         for chunk in iter(lambda: tuple(islice(gen, COLS)), ()):
             print(*chunk, sep="", end="")
