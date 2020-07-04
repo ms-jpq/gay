@@ -10,7 +10,7 @@ def slurp(path: str) -> str:
 
 setup(
     name="gay",
-    version="1.2.1",
+    version="1.2.2",
     description="Colour your text / terminal to be more gay. 🏳️‍🌈",
     long_description=slurp("README.md"),
     long_description_content_type="text/markdown",
