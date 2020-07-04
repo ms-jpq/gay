@@ -123,7 +123,7 @@ def parse_args() -> Namespace:
         "--colour",
         type=ColourSpace,
         choices=tuple(ColourSpace),
-        default=colour_space.value,
+        default=colour_space
     )
     opt_group.add_argument(
         "-i",
