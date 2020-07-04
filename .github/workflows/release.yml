@@ -20,6 +20,9 @@ jobs:
       - name: Pip Packages
         run: pip install -U setuptools wheel
 
+      - name: Test
+        run: ./docker/ci.sh
+
       - name: Build
         run: ./setup.py sdist bdist_wheel
 

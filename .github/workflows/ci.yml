@@ -14,5 +14,5 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Build
+      - name: Test
         run: ./docker/ci.sh
