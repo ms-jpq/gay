@@ -17,5 +17,11 @@ jobs:
       - name: Test
         run: ./docker/ci.sh
 
+      - name: Setup Python
+        uses: actions/setup-python@v2
+
+      - name: Pip Packages
+        run: pip install -U setuptools wheel
+
       - name: Build
         run: ./setup.py sdist bdist_wheel
