@@ -16,3 +16,6 @@ jobs:
 
       - name: Test
         run: ./docker/ci.sh
+
+      - name: Build
+        run: ./setup.py sdist bdist_wheel
