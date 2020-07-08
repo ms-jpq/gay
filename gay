@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 from argparse import ArgumentParser, Namespace
 from atexit import register
 from enum import Enum, auto
