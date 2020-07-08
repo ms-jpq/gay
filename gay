@@ -3,7 +3,7 @@
 
 from argparse import ArgumentParser, Namespace
 from atexit import register
-from enum import Enum
+from enum import Enum, auto
 from itertools import chain, count, cycle, islice, repeat
 from math import pi, sin
 from os import environ
@@ -32,14 +32,14 @@ class Gradient(Enum):
 
 
 class Flags(Enum):
-    LES = 1
-    GAY = 2
-    BI = 3
-    TRANS = 4
-    ACE = 5
-    PAN = 6
-    NB = 7
-    GQ = 8
+    LES = auto()
+    GAY = auto()
+    BI = auto()
+    TRANS = auto()
+    ACE = auto()
+    PAN = auto()
+    NB = auto()
+    GQ = auto()
 
 
 HexColour = str
@@ -123,7 +123,7 @@ def parse_args() -> Namespace:
         "--colour",
         type=ColourSpace,
         choices=tuple(ColourSpace),
-        default=colour_space
+        default=colour_space,
     )
     opt_group.add_argument(
         "-i",
