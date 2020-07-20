@@ -155,7 +155,7 @@ def stdin_stream() -> Iterator[str]:
         size = COLS * 4
         line = stdin.read(size)
         if line:
-            yield from line
+            yield from iter(line)
         else:
             break
 
