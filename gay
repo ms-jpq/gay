@@ -5,7 +5,7 @@ from atexit import register
 from enum import Enum, auto
 from itertools import chain, count, cycle, islice, repeat
 from math import pi, sin
-from os import environ
+from os import environ, linesep
 from platform import system
 from random import choice, randint
 from shutil import get_terminal_size
@@ -250,7 +250,7 @@ def paint_flag(colour_space: ColourSpace, palette: Palette) -> Iterator[str]:
             yield from bg(colour)
             yield line
             yield from reset()
-            yield "\n"
+            yield linesep
 
 
 def enumerate_lines(stream: Iterator[str]) -> Iterator[Tuple[bool, int, str]]:
@@ -271,7 +271,7 @@ def enumerate_lines(stream: Iterator[str]) -> Iterator[Tuple[bool, int, str]]:
             yield from drain(True)
             prev = (width, char)
             x = width
-        elif new == COLS or char == "\n":
+        elif new == COLS or char == linesep:
             yield from drain(False)
             yield True, width, char
             x = 0
