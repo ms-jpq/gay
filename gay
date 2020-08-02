@@ -6,7 +6,7 @@ from enum import Enum, auto
 from itertools import chain, count, cycle, islice, repeat
 from math import pi, sin
 from os import environ, linesep
-from platform import system
+from os import name as os_name
 from random import choice, randint
 from shutil import get_terminal_size
 from sys import stdin
@@ -46,7 +46,7 @@ RGB = Tuple[int, int, int]
 RawPalette = List[HexColour]
 Palette = List[RGB]
 
-WINDOWS = system() == "Windows"
+WINDOWS = os_name == "nt"
 COLS, ROWS = get_terminal_size((80, 80))
 
 UNICODE_WIDTH_LOOKUP = {
