@@ -39,6 +39,8 @@ class Flags(Enum):
     PAN = auto()
     NB = auto()
     GQ = auto()
+    MLM = auto()
+    ARO = auto()
 
 
 HexColour = str
@@ -64,6 +66,16 @@ FLAG_SPECS: Dict[Flags, RawPalette] = {
     Flags.PAN: ["#FF1B8D", "#FFDA00", "#1BB3FF"],
     Flags.NB: ["#FFF430", "#FFFFFF", "#9C59D1", "#000000"],
     Flags.GQ: ["#B77FDD", "#FFFFFF", "#48821E"],
+    Flags.MLM: [
+        "#078D70",
+        "#27CEAA",
+        "#98E8C1",
+        "#ffffff",
+        "#7bade2",
+        "#5049cc",
+        "#3d1a78",
+    ],
+    Flags.ARO: ["#3AA63F", "#A8D47A", "#FFFFFF", "#AAAAAA", "#000000"],
 }
 
 
@@ -82,13 +94,28 @@ def parse_args() -> Namespace:
 
     flag_group = parser.add_argument_group()
     flag_group.add_argument(
-        "-l", "--les", "--lesbian", action="store_const", dest="flag", const=Flags.LES,
+        "-l",
+        "--les",
+        "--lesbian",
+        "--wlw",
+        action="store_const",
+        dest="flag",
+        const=Flags.LES,
     )
     flag_group.add_argument(
-        "-g", "--gay", action="store_const", dest="flag", const=Flags.GAY,
+        "-g",
+        "--gay",
+        action="store_const",
+        dest="flag",
+        const=Flags.GAY,
     )
     flag_group.add_argument(
-        "-b", "--bi", "--bisexual", action="store_const", dest="flag", const=Flags.BI,
+        "-b",
+        "--bi",
+        "--bisexual",
+        action="store_const",
+        dest="flag",
+        const=Flags.BI,
     )
     flag_group.add_argument(
         "-t",
@@ -99,7 +126,12 @@ def parse_args() -> Namespace:
         const=Flags.TRANS,
     )
     flag_group.add_argument(
-        "-a", "--ace", "--asexual", action="store_const", dest="flag", const=Flags.ACE,
+        "-a",
+        "--ace",
+        "--asexual",
+        action="store_const",
+        dest="flag",
+        const=Flags.ACE,
     )
     flag_group.add_argument(
         "-p",
@@ -110,10 +142,32 @@ def parse_args() -> Namespace:
         const=Flags.PAN,
     )
     flag_group.add_argument(
-        "-n", "--nb", "--non-binary", action="store_const", dest="flag", const=Flags.NB,
+        "-n",
+        "--nb",
+        "--non-binary",
+        action="store_const",
+        dest="flag",
+        const=Flags.NB,
     )
     flag_group.add_argument(
-        "--gq", "--gender-queer", action="store_const", dest="flag", const=Flags.GQ,
+        "--gq",
+        "--gender-queer",
+        action="store_const",
+        dest="flag",
+        const=Flags.GQ,
+    )
+    flag_group.add_argument(
+        "--mlm",
+        action="store_const",
+        dest="flag",
+        const=Flags.MLM,
+    )
+    flag_group.add_argument(
+        "--aro",
+        "--aromantic",
+        action="store_const",
+        dest="flag",
+        const=Flags.ARO,
     )
 
     opt_group = parser.add_argument_group()
@@ -344,7 +398,9 @@ def interpolation_for(
 
 
 def colourize(
-    colour_space: ColourSpace, rgb_gen: Iterator[Iterator[RGB]], stream: Iterator[str],
+    colour_space: ColourSpace,
+    rgb_gen: Iterator[Iterator[RGB]],
+    stream: Iterator[str],
 ) -> Iterator[str]:
     fg, _, reset = decor_for(colour_space)
     colour_gen = next(rgb_gen)
@@ -375,7 +431,9 @@ def main() -> None:
             mode=args.interpolation, palette=palette, rep=args.period
         )
         gen = colourize(
-            colour_space=args.colour, rgb_gen=rgb_gen, stream=normalized_stream,
+            colour_space=args.colour,
+            rgb_gen=rgb_gen,
+            stream=normalized_stream,
         )
         for chunk in iter(lambda: tuple(islice(gen, COLS)), ()):
             print(*chunk, sep="", end="")
