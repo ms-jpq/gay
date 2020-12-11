@@ -19,7 +19,7 @@ class ColourSpace(Enum):
     TRUE = "24"
 
     def __str__(self) -> str:
-        return self.value
+        return cast(str, self.value)
 
 
 class Gradient(Enum):
@@ -27,7 +27,7 @@ class Gradient(Enum):
     D2 = "2d"
 
     def __str__(self) -> str:
-        return self.value
+        return cast(str, self.value)
 
 
 class Flags(Enum):
