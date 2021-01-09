@@ -45,6 +45,8 @@ class Flags(Enum):
     DEMIBOY = auto()
     DEMIGIRL = auto()
     AGENDER = auto()
+    BIGENDER = auto()
+    GENDERFLUID = auto()
 
 
 HexColour = str
@@ -84,6 +86,8 @@ FLAG_SPECS: Dict[Flags, RawPalette] = {
     Flags.DEMIBOY: ["#7F7F7F", "#C3C3C3", "#9AD9EA", "#FFFFFF", "#9AD9EA", "#C3C3C3", "#7F7F7F"],
     Flags.DEMIGIRL: ["#7F7F7F", "#C3C3C3", "#FEAEC9", "#FFFFFF", "#FEAEC9", "#C3C3C3", "#7F7F7F"],
     Flags.AGENDER: ["#000000", "#BCC5C6", "#FFFFFF", "#B5F582", "#FFFFFF", "#BCC5C6", "#000000"],
+    Flags.BIGENDER: ["#C479A0", "#ECA6CB", "#D5C7E8", "#FFFFFF", "#D5C7E8", "#9AC7E8", "#6C83CF"],
+    Flags.GENDERFLUID: ["#FE75A1", "#FFFFFF", "#BE18D6", "#000000", "#333EBC"]
 }
 
 
@@ -204,6 +208,20 @@ def parse_args() -> Namespace:
         action="store_const",
         dest="flag",
         const=Flags.AGENDER,
+    )
+    flag_group.add_argument(
+        "--bg",
+        "--bigender",
+        action="store_const",
+        dest="flag",
+        const=Flags.BIGENDER,
+    )
+    flag_group.add_argument(
+        "--gf",
+        "--genderfluid",
+        action="store_const",
+        dest="flag",
+        const=Flags.GENDERFLUID,
     )
 
     opt_group = parser.add_argument_group()
