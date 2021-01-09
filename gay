@@ -185,22 +185,22 @@ def parse_args() -> Namespace:
         const=Flags.POLY,
     )
     flag_group.add_argument(
-        "--demiboy",
         "--db",
+        "--demiboy",
         action="store_const",
         dest="flag",
         const=Flags.DEMIBOY,
     )
     flag_group.add_argument(
-        "--demigirl",
         "--dg",
+        "--demigirl",
         action="store_const",
         dest="flag",
         const=Flags.DEMIGIRL,
     )
     flag_group.add_argument(
-        "--agender",
         "--ag",
+        "--agender",
         action="store_const",
         dest="flag",
         const=Flags.AGENDER,
