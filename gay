@@ -41,6 +41,15 @@ class Flags(Enum):
     GQ = auto()
     MLM = auto()
     ARO = auto()
+    POLY = auto()
+    DEMIBOY = auto()
+    DEMIGIRL = auto()
+    AGENDER = auto()
+    BIGENDER = auto()
+    GENDERFLUID = auto()
+    ABRO = auto()
+    NEUTROIS = auto()
+    TRIGENDER = auto()
 
 
 HexColour = str
@@ -76,6 +85,15 @@ FLAG_SPECS: Dict[Flags, RawPalette] = {
         "#3d1a78",
     ],
     Flags.ARO: ["#3AA63F", "#A8D47A", "#FFFFFF", "#AAAAAA", "#000000"],
+    Flags.POLY: ["#F61BB9", "#07D669", "#1C92F5"],
+    Flags.DEMIBOY: ["#7F7F7F", "#C3C3C3", "#9AD9EA", "#FFFFFF", "#9AD9EA", "#C3C3C3", "#7F7F7F"],
+    Flags.DEMIGIRL: ["#7F7F7F", "#C3C3C3", "#FEAEC9", "#FFFFFF", "#FEAEC9", "#C3C3C3", "#7F7F7F"],
+    Flags.AGENDER: ["#000000", "#BCC5C6", "#FFFFFF", "#B5F582", "#FFFFFF", "#BCC5C6", "#000000"],
+    Flags.BIGENDER: ["#C479A0", "#ECA6CB", "#D5C7E8", "#FFFFFF", "#D5C7E8", "#9AC7E8", "#6C83CF"],
+    Flags.GENDERFLUID: ["#FE75A1", "#FFFFFF", "#BE18D6", "#000000", "#333EBC"],
+    Flags.ABRO: ["#75CA92", "#B2E4C5", "#FFFFFF", "#E695B5", "#DA446C"],
+    Flags.NEUTROIS: ["#FFFFFF", "#2F9C1D", "#000000"],
+    Flags.TRIGENDER: ["#FF95C5", "#9580FF", "#67D967", "#9580FF", "#FF95C5"]
 }
 
 
@@ -168,6 +186,70 @@ def parse_args() -> Namespace:
         action="store_const",
         dest="flag",
         const=Flags.ARO,
+    )
+    flag_group.add_argument(
+        "--poly",
+        "--polysexual",
+        action="store_const",
+        dest="flag",
+        const=Flags.POLY,
+    )
+    flag_group.add_argument(
+        "--db",
+        "--demiboy",
+        action="store_const",
+        dest="flag",
+        const=Flags.DEMIBOY,
+    )
+    flag_group.add_argument(
+        "--dg",
+        "--demigirl",
+        action="store_const",
+        dest="flag",
+        const=Flags.DEMIGIRL,
+    )
+    flag_group.add_argument(
+        "--ag",
+        "--agender",
+        action="store_const",
+        dest="flag",
+        const=Flags.AGENDER,
+    )
+    flag_group.add_argument(
+        "--bg",
+        "--bigender",
+        action="store_const",
+        dest="flag",
+        const=Flags.BIGENDER,
+    )
+    flag_group.add_argument(
+        "--gf",
+        "--genderfluid",
+        action="store_const",
+        dest="flag",
+        const=Flags.GENDERFLUID,
+    )
+    flag_group.add_argument(
+        "--abro",
+        "--abrosexual",
+        action="store_const",
+        dest="flag",
+        const=Flags.ABRO,
+    )
+    flag_group.add_argument(
+        "--nt",
+        "--neut",
+        "--neutrois",
+        action="store_const",
+        dest="flag",
+        const=Flags.NEUTROIS,
+    )
+    flag_group.add_argument(
+        "--tri",
+        "--trigender",
+        action="store_const",
+        dest="flag",
+        const=Flags.TRIGENDER,
     )
 
     opt_group = parser.add_argument_group()
