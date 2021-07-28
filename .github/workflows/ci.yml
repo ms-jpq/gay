@@ -27,7 +27,9 @@ jobs:
         run: pip install -U mypy
 
       - name: Lint
-        run: ./lint.sh
+        run: |-
+          mypy -- ./gay
+          mypy -- .
 
   test:
     runs-on: ubuntu-latest
