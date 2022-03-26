@@ -18,5 +18,6 @@ setup(
     author="ms-jpq",
     author_email="github@bigly.dog",
     url="https://github.com/ms-jpq/gay",
+    packages=[],
     scripts=["gay"],
 )
