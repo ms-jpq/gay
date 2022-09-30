@@ -2,10 +2,10 @@
 
 set -eu
 set -o pipefail
+shopt -s globstar nullglob
 
 
 cd "$(dirname "$0")" || exit 1
-
 
 ./gay -f -l
 printf '\n\n'
