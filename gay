@@ -13,7 +13,6 @@ from sys import stdin, stdout
 from typing import Callable, Iterator, Mapping, Optional, Sequence, Tuple, cast
 from unicodedata import east_asian_width
 
-
 class _ColourSpace(Enum):
     EIGHT = "8"
     TRUE = "24"
@@ -316,9 +315,9 @@ def _trap_sig() -> None:
 
 def _stdin_stream() -> Iterator[str]:
     while True:
-        line = stdin.read(696969)
+        line = stdin.buffer.read(696969)
         if line:
-            yield from line
+            yield from line.decode('utf-8')
         else:
             break
 
@@ -329,18 +328,6 @@ def _normalize_width(tab_width: int, stream: Iterator[str]) -> Iterator[str]:
             yield from repeat(" ", tab_width)
         else:
             yield char
-
-
-def _unicode_width(stream: Iterator[str]) -> Iterator[Tuple[int, str]]:
-    def char_width(char: str) -> int:
-        try:
-            code = east_asian_width(char)
-            return _UNICODE_WIDTH_LOOKUP.get(code, 1)
-        except Exception:
-            return 1
-
-    for char in stream:
-        yield char_width(char), char
 
 
 def _parse_raw_palette(raw: _RawPalette) -> _Palette:
@@ -418,9 +405,36 @@ def _paint_flag(colour_space: _ColourSpace, palette: _Palette) -> Iterator[str]:
             yield linesep
 
 
-def _enumerate_lines(stream: Iterator[str]) -> Iterator[Tuple[bool, int, str]]:
+def _parse_ansi(stream: Iterator[str]) -> Iterator[Tuple[str, bool]]:
+    for char in stream:
+        if char != '\x1b':
+            yield (char, False)
+        else:
+            code = char
+            for attr_char in stream:
+                code += attr_char
+                # approximate hack to find end of escape code
+                if attr_char.isalpha() or attr_char in "\n\a":
+                    break
+            yield (code, True)
 
-    l_stream = _unicode_width(stream)
+
+def _enumerate_lines(stream: Iterator[str]) -> Iterator[Tuple[bool, int, str]]:
+    def char_width(char: str) -> int:
+        try:
+            code = east_asian_width(char)
+            return _UNICODE_WIDTH_LOOKUP.get(code, 1)
+        except Exception:
+            return 1
+
+    def get_width(stream) -> Iterator[Tuple[int, str]]:
+        for char, is_code in _parse_ansi(stream):
+            if is_code:
+                yield (0, char)
+            else:
+                yield (char_width(char), char)
+
+    l_stream = get_width(stream)
     prev: Optional[Tuple[int, str]] = next(l_stream, None)
     x = 0 if prev is None else 1
 
@@ -506,7 +520,6 @@ def _interpolation_for(
         return _interpolate_2d(palette, period)
     else:
         raise ValueError()
-
 
 def _colourize(
     colour_space: _ColourSpace,
