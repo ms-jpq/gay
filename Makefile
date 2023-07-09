@@ -27,8 +27,8 @@ lint: .venv/bin/mypy
 	'$<' -- ./gay
 
 fmt: .venv/bin/mypy
-	.venv/bin/isort --profile=black --gitignore -- .
-	.venv/bin/black -- .
+	.venv/bin/isort --profile=black --gitignore -- . ./gay
+	.venv/bin/black -- . ./gay
 
 test:
 	./docker/ci.sh
