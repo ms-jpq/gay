@@ -48,4 +48,4 @@ jobs:
       - uses: actions/setup-python@v3
 
       - run: |-
-          make build
+          make release

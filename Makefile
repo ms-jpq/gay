@@ -8,7 +8,7 @@ SHELL := bash
 
 .DEFAULT_GOAL := help
 
-.PHONY: clean clobber lint test build fmt test
+.PHONY: clean clobber lint test fmt release
 
 clean:
 	rm -rf -- .mypy_cache/ *.egg-info/ build/ dist/
@@ -33,5 +33,10 @@ fmt: .venv/bin/mypy
 test:
 	./docker/ci.sh
 
-build: .venv/bin/mypy
-	.venv/bin/python3 ./setup.py sdist bdist_wheel
+release: .venv/bin/mypy
+	.venv/bin/python3 <<EOF
+	from setuptools import setup
+	from sys import argv
+	argv.extend(("sdist", "bdist_wheel"))
+	setup()
+	EOF
