@@ -67,15 +67,15 @@ _UNICODE_WIDTH_LOOKUP = {
 
 _ASPECT_RATIO = (3, 5)
 _FLAG_SPECS: Mapping[_Flags, _RawPalette] = {
-    _Flags.LES: ["#D62E02", "#FD9855", "#FFFFFF", "#D161A2", "#A20160"],
-    _Flags.GAY: ["#FF0018", "#FFA52C", "#FFFF41", "#008018", "#0000F9", "#86007D"],
-    _Flags.BI: ["#D60270", "#D60270", "#9B4F96", "#0038A8", "#0038A8"],
-    _Flags.TRANS: ["#55CDFC", "#F7A8B8", "#FFFFFF", "#F7A8B8", "#55CDFC"],
-    _Flags.ACE: ["#000000", "#A4A4A4", "#FFFFFF", "#810081"],
-    _Flags.PAN: ["#FF1B8D", "#FFDA00", "#1BB3FF"],
-    _Flags.NB: ["#FFF430", "#FFFFFF", "#9C59D1", "#000000"],
-    _Flags.GQ: ["#B77FDD", "#FFFFFF", "#48821E"],
-    _Flags.MLM: [
+    _Flags.LES: ("#D62E02", "#FD9855", "#FFFFFF", "#D161A2", "#A20160"),
+    _Flags.GAY: ("#FF0018", "#FFA52C", "#FFFF41", "#008018", "#0000F9", "#86007D"),
+    _Flags.BI: ("#D60270", "#D60270", "#9B4F96", "#0038A8", "#0038A8"),
+    _Flags.TRANS: ("#55CDFC", "#F7A8B8", "#FFFFFF", "#F7A8B8", "#55CDFC"),
+    _Flags.ACE: ("#000000", "#A4A4A4", "#FFFFFF", "#810081"),
+    _Flags.PAN: ("#FF1B8D", "#FFDA00", "#1BB3FF"),
+    _Flags.NB: ("#FFF430", "#FFFFFF", "#9C59D1", "#000000"),
+    _Flags.GQ: ("#B77FDD", "#FFFFFF", "#48821E"),
+    _Flags.MLM: (
         "#078D70",
         "#27CEAA",
         "#98E8C1",
@@ -83,10 +83,10 @@ _FLAG_SPECS: Mapping[_Flags, _RawPalette] = {
         "#7bade2",
         "#5049cc",
         "#3d1a78",
-    ],
-    _Flags.ARO: ["#3AA63F", "#A8D47A", "#FFFFFF", "#AAAAAA", "#000000"],
-    _Flags.POLY: ["#F61BB9", "#07D669", "#1C92F5"],
-    _Flags.DEMIBOY: [
+    ),
+    _Flags.ARO: ("#3AA63F", "#A8D47A", "#FFFFFF", "#AAAAAA", "#000000"),
+    _Flags.POLY: ("#F61BB9", "#07D669", "#1C92F5"),
+    _Flags.DEMIBOY: (
         "#7F7F7F",
         "#C3C3C3",
         "#9AD9EA",
@@ -94,8 +94,8 @@ _FLAG_SPECS: Mapping[_Flags, _RawPalette] = {
         "#9AD9EA",
         "#C3C3C3",
         "#7F7F7F",
-    ],
-    _Flags.DEMIGIRL: [
+    ),
+    _Flags.DEMIGIRL: (
         "#7F7F7F",
         "#C3C3C3",
         "#FEAEC9",
@@ -103,8 +103,8 @@ _FLAG_SPECS: Mapping[_Flags, _RawPalette] = {
         "#FEAEC9",
         "#C3C3C3",
         "#7F7F7F",
-    ],
-    _Flags.AGENDER: [
+    ),
+    _Flags.AGENDER: (
         "#000000",
         "#BCC5C6",
         "#FFFFFF",
@@ -112,8 +112,8 @@ _FLAG_SPECS: Mapping[_Flags, _RawPalette] = {
         "#FFFFFF",
         "#BCC5C6",
         "#000000",
-    ],
-    _Flags.BIGENDER: [
+    ),
+    _Flags.BIGENDER: (
         "#C479A0",
         "#ECA6CB",
         "#D5C7E8",
@@ -121,11 +121,11 @@ _FLAG_SPECS: Mapping[_Flags, _RawPalette] = {
         "#D5C7E8",
         "#9AC7E8",
         "#6C83CF",
-    ],
-    _Flags.GENDERFLUID: ["#FE75A1", "#FFFFFF", "#BE18D6", "#000000", "#333EBC"],
-    _Flags.ABRO: ["#75CA92", "#B2E4C5", "#FFFFFF", "#E695B5", "#DA446C"],
-    _Flags.NEUTROIS: ["#FFFFFF", "#2F9C1D", "#000000"],
-    _Flags.TRIGENDER: ["#FF95C5", "#9580FF", "#67D967", "#9580FF", "#FF95C5"],
+    ),
+    _Flags.GENDERFLUID: ("#FE75A1", "#FFFFFF", "#BE18D6", "#000000", "#333EBC"),
+    _Flags.ABRO: ("#75CA92", "#B2E4C5", "#FFFFFF", "#E695B5", "#DA446C"),
+    _Flags.NEUTROIS: ("#FFFFFF", "#2F9C1D", "#000000"),
+    _Flags.TRIGENDER: ("#FF95C5", "#9580FF", "#67D967", "#9580FF", "#FF95C5"),
 }
 
 
@@ -352,7 +352,7 @@ def _parse_raw_palette(raw: _RawPalette) -> _Palette:
         )
         return cast(_RGB, parsed)
 
-    return [parse_colour(p) for p in raw]
+    return tuple(parse_colour(p) for p in raw)
 
 
 _DecorateChar = Callable[[_RGB], Iterator[str]]
