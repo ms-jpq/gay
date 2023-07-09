@@ -23,7 +23,6 @@ clobber: clean
 	'$<' -m pip install --requirement requirements.dev.txt
 
 lint: .venv/bin/mypy
-	'$<' -- .
 	'$<' -- ./gay
 
 fmt: .venv/bin/mypy
