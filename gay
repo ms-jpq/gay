@@ -303,6 +303,16 @@ def _parse_args() -> Namespace:
     opt_group.add_argument(
         "--tabs", "--tab-width", type=lambda i: max(abs(int(i)), 1), default=4
     )
+    opt_group.add_argument(
+        "--black",
+        type=str,
+        default="#000000",
+    )
+    opt_group.add_argument(
+        "--white",
+        type=str,
+        default="#FFFFFF",
+    )
 
     return parser.parse_args(namespace=namespace)
 
@@ -546,7 +556,10 @@ def _main() -> None:
     with _title():
         _trap_sig()
         args = _parse_args()
-        palette = _parse_raw_palette(_FLAG_SPECS[args.flag])
+        raw_palette = _FLAG_SPECS[args.flag]
+        raw_palette = [i.replace('#000000', args.black) for i in raw_palette]
+        raw_palette = [i.replace('#FFFFFF', args.white) for i in raw_palette]
+        palette = _parse_raw_palette(raw_palette)
 
         if args.flag_only:
             flag_stripes = _paint_flag(colour_space=args.colour, palette=palette)
