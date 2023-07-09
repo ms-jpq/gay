@@ -10,49 +10,42 @@ jobs:
   mypy:
     strategy:
       matrix:
-        python_ver: [3.7, 3.8, 3.9]
-    
+        python_ver:
+          - 3.7
+          - 3.8
+          - 3.9
+          - 3.10
+          - 3.11
+          - 3
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v2
+      - uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python_ver }}
 
-      - name: Pip Packages
-        run: pip install -U mypy
-
-      - name: Lint
-        run: |-
-          mypy -- ./gay
-          mypy -- .
+      - run: |-
+          make lint
 
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Test
-        run: ./docker/ci.sh
+      - run: |-
+          ./docker/ci.sh
 
   dist:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v2
+      - uses: actions/setup-python@v3
 
-      - name: Pip Packages
-        run: pip install -U setuptools wheel
-
-      - name: Build
-        run: ./setup.py sdist bdist_wheel
+      - run: |-
+          make build

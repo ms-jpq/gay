@@ -11,20 +11,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v2
+      - uses: actions/setup-python@v3
 
-      - name: Pip Packages
-        run: pip install -U setuptools wheel
+      - run: |-
+          make test
 
-      - name: Test
-        run: ./docker/ci.sh
-
-      - name: Build
-        run: ./setup.py sdist bdist_wheel
+      - run: |-
+          make build
 
       - name: Publish PyPI
         uses: pypa/gh-action-pypi-publish@master

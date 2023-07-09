@@ -419,7 +419,6 @@ def _paint_flag(colour_space: _ColourSpace, palette: _Palette) -> Iterator[str]:
 
 
 def _enumerate_lines(stream: Iterator[str]) -> Iterator[Tuple[bool, int, str]]:
-
     l_stream = _unicode_width(stream)
     prev: Optional[Tuple[int, str]] = next(l_stream, None)
     x = 0 if prev is None else 1
