@@ -4,7 +4,7 @@ name: Release
 on:
   push:
     paths:
-      - "setup.py"
+      - "setup.cfg"
 
 jobs:
   release:
