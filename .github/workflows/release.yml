@@ -19,7 +19,7 @@ jobs:
           make test
 
       - run: |-
-          make build
+          make release
 
       - name: Publish PyPI
         uses: pypa/gh-action-pypi-publish@master
