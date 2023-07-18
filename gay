@@ -33,6 +33,7 @@ class _Gradient(Enum):
 class _Flags(Enum):
     LES = auto()
     GAY = auto()
+    GAY_MEN = auto()
     BI = auto()
     TRANS = auto()
     ACE = auto()
@@ -68,6 +69,7 @@ _UNICODE_WIDTH_LOOKUP = {
 _ASPECT_RATIO = (3, 5)
 _FLAG_SPECS: Mapping[_Flags, _RawPalette] = {
     _Flags.LES: ("#D62E02", "#FD9855", "#FFFFFF", "#D161A2", "#A20160"),
+    _Flags.GAY_MEN: ("#3E8C72", "#ABE7C4", "#FFFFFF", "#87AEDF", "#351574"),
     _Flags.GAY: ("#FF0018", "#FFA52C", "#FFFF41", "#008018", "#0000F9", "#86007D"),
     _Flags.BI: ("#D60270", "#D60270", "#9B4F96", "#0038A8", "#0038A8"),
     _Flags.TRANS: ("#55CDFC", "#F7A8B8", "#FFFFFF", "#F7A8B8", "#55CDFC"),
@@ -158,6 +160,13 @@ def _parse_args() -> Namespace:
         action="store_const",
         dest="flag",
         const=_Flags.GAY,
+    )
+    flag_group.add_argument(
+        "-gm",
+        "--gay-men",
+        action="store_const",
+        dest="flag",
+        const=_Flags.GAY_MEN,
     )
     flag_group.add_argument(
         "-b",
