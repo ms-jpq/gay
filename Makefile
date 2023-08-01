@@ -11,10 +11,10 @@ SHELL := bash
 .PHONY: clean clobber lint test fmt release
 
 clean:
-	rm -rf -- .mypy_cache/ *.egg-info/ build/ dist/
+	rm -v -rf -- .mypy_cache/ *.egg-info/ build/ dist/
 
 clobber: clean
-	rm -rf -- .venv/
+	rm -v -rf -- .venv/
 
 .venv/bin/python3:
 	python3 -m venv -- .venv
