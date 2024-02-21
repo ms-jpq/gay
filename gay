@@ -529,7 +529,7 @@ def _title() -> Iterator[None]:
     def cont(title: str) -> None:
         stdout.write("\x1B[0m")
         if "TMUX" in environ:
-            stdout.write(f"\x1Bk{title}\x1B\\")
+            stdout.write(f"\x1B]2{title}\x1B\\")
         else:
             stdout.write(f"\x1B]0;{title}\x1B\\")
 
