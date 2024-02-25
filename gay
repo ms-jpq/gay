@@ -3,13 +3,14 @@
 from argparse import ArgumentParser, Namespace
 from contextlib import contextmanager
 from enum import Enum, auto
+from io import DEFAULT_BUFFER_SIZE
 from itertools import chain, count, cycle, islice, repeat
 from math import pi, sin
 from os import environ, linesep
 from os import name as os_name
 from random import choice, randint
 from shutil import get_terminal_size
-from sys import stdin, stdout
+from sys import stderr, stdin, stdout
 from typing import Callable, Iterator, Mapping, Optional, Sequence, Tuple, cast
 from unicodedata import east_asian_width
 
@@ -316,7 +317,7 @@ def _trap_sig() -> None:
 
 def _stdin_stream() -> Iterator[str]:
     while True:
-        line = stdin.read(696969)
+        line = stdin.read(DEFAULT_BUFFER_SIZE)
         if line:
             yield from line
         else:
@@ -526,14 +527,17 @@ def _colourize(
 
 @contextmanager
 def _title() -> Iterator[None]:
-    def cont(title: str) -> None:
-        stdout.write("\x1B[0m")
-        if "TMUX" in environ:
-            stdout.write(f"\x1B]2{title}\x1B\\")
-        else:
-            stdout.write(f"\x1B]0;{title}\x1B\\")
+    atty = stderr.isatty()
 
-        stdout.flush()
+    def cont(title: str) -> None:
+        if atty:
+            stderr.write("\x1B[0m")
+            if "TMUX" in environ:
+                stderr.write(f"\x1B]2{title}\x1B\\")
+            else:
+                stderr.write(f"\x1B]0;{title}\x1B\\")
+
+            stderr.flush()
 
     cont("GAY")
     try:
@@ -563,7 +567,9 @@ def _main() -> None:
                 rgb_gen=rgb_gen,
                 stream=normalized_stream,
             )
-            stdout.writelines(gen)
+            for chunk in gen:
+                stdout.write(chunk)
+                stdout.flush()
 
 
 try:
