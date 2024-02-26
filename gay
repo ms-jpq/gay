@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 
 from argparse import ArgumentParser, Namespace
-from contextlib import contextmanager
+from codecs import iterdecode
+from contextlib import contextmanager, nullcontext
 from enum import Enum, auto
-from io import DEFAULT_BUFFER_SIZE
+from io import DEFAULT_BUFFER_SIZE, BufferedIOBase
 from itertools import chain, count, cycle, islice, repeat
 from math import pi, sin
 from os import environ, linesep
 from os import name as os_name
 from random import choice, randint
 from shutil import get_terminal_size
-from sys import stderr, stdin, stdout
+from sys import getdefaultencoding, stderr, stdin, stdout
 from typing import Callable, Iterator, Mapping, Optional, Sequence, Tuple, cast
 from unicodedata import east_asian_width
 
@@ -138,172 +139,174 @@ def _parse_args() -> Namespace:
     )
     rand_flag = choice(tuple(_Flags))
     namespace = Namespace(flag=rand_flag)
+
     parser = ArgumentParser()
+    parser.add_argument("--encoding", default=getdefaultencoding())
 
-    mode_group = parser.add_argument_group()
-    mode_group.add_argument("-f", "--flag", dest="flag_only", action="store_true")
+    with nullcontext(parser.add_argument_group()) as mode_group:
+        mode_group.add_argument("-f", "--flag", dest="flag_only", action="store_true")
 
-    flag_group = parser.add_argument_group()
-    flag_group.add_argument(
-        "-l",
-        "--les",
-        "--lesbian",
-        "--wlw",
-        action="store_const",
-        dest="flag",
-        const=_Flags.LES,
-    )
-    flag_group.add_argument(
-        "-g",
-        "--gay",
-        action="store_const",
-        dest="flag",
-        const=_Flags.GAY,
-    )
-    flag_group.add_argument(
-        "-b",
-        "--bi",
-        "--bisexual",
-        action="store_const",
-        dest="flag",
-        const=_Flags.BI,
-    )
-    flag_group.add_argument(
-        "-t",
-        "--trans",
-        "--transgender",
-        action="store_const",
-        dest="flag",
-        const=_Flags.TRANS,
-    )
-    flag_group.add_argument(
-        "-a",
-        "--ace",
-        "--asexual",
-        action="store_const",
-        dest="flag",
-        const=_Flags.ACE,
-    )
-    flag_group.add_argument(
-        "-p",
-        "--pan",
-        "--pansexual",
-        action="store_const",
-        dest="flag",
-        const=_Flags.PAN,
-    )
-    flag_group.add_argument(
-        "-n",
-        "--nb",
-        "--non-binary",
-        action="store_const",
-        dest="flag",
-        const=_Flags.NB,
-    )
-    flag_group.add_argument(
-        "--gq",
-        "--gender-queer",
-        action="store_const",
-        dest="flag",
-        const=_Flags.GQ,
-    )
-    flag_group.add_argument(
-        "--mlm",
-        action="store_const",
-        dest="flag",
-        const=_Flags.MLM,
-    )
-    flag_group.add_argument(
-        "--aro",
-        "--aromantic",
-        action="store_const",
-        dest="flag",
-        const=_Flags.ARO,
-    )
-    flag_group.add_argument(
-        "--poly",
-        "--polysexual",
-        action="store_const",
-        dest="flag",
-        const=_Flags.POLY,
-    )
-    flag_group.add_argument(
-        "--db",
-        "--demiboy",
-        action="store_const",
-        dest="flag",
-        const=_Flags.DEMIBOY,
-    )
-    flag_group.add_argument(
-        "--dg",
-        "--demigirl",
-        action="store_const",
-        dest="flag",
-        const=_Flags.DEMIGIRL,
-    )
-    flag_group.add_argument(
-        "--ag",
-        "--agender",
-        action="store_const",
-        dest="flag",
-        const=_Flags.AGENDER,
-    )
-    flag_group.add_argument(
-        "--bg",
-        "--bigender",
-        action="store_const",
-        dest="flag",
-        const=_Flags.BIGENDER,
-    )
-    flag_group.add_argument(
-        "--gf",
-        "--genderfluid",
-        action="store_const",
-        dest="flag",
-        const=_Flags.GENDERFLUID,
-    )
-    flag_group.add_argument(
-        "--abro",
-        "--abrosexual",
-        action="store_const",
-        dest="flag",
-        const=_Flags.ABRO,
-    )
-    flag_group.add_argument(
-        "--nt",
-        "--neut",
-        "--neutrois",
-        action="store_const",
-        dest="flag",
-        const=_Flags.NEUTROIS,
-    )
-    flag_group.add_argument(
-        "--tri",
-        "--trigender",
-        action="store_const",
-        dest="flag",
-        const=_Flags.TRIGENDER,
-    )
+    with nullcontext(parser.add_argument_group()) as flag_group:
+        flag_group.add_argument(
+            "-l",
+            "--les",
+            "--lesbian",
+            "--wlw",
+            action="store_const",
+            dest="flag",
+            const=_Flags.LES,
+        )
+        flag_group.add_argument(
+            "-g",
+            "--gay",
+            action="store_const",
+            dest="flag",
+            const=_Flags.GAY,
+        )
+        flag_group.add_argument(
+            "-b",
+            "--bi",
+            "--bisexual",
+            action="store_const",
+            dest="flag",
+            const=_Flags.BI,
+        )
+        flag_group.add_argument(
+            "-t",
+            "--trans",
+            "--transgender",
+            action="store_const",
+            dest="flag",
+            const=_Flags.TRANS,
+        )
+        flag_group.add_argument(
+            "-a",
+            "--ace",
+            "--asexual",
+            action="store_const",
+            dest="flag",
+            const=_Flags.ACE,
+        )
+        flag_group.add_argument(
+            "-p",
+            "--pan",
+            "--pansexual",
+            action="store_const",
+            dest="flag",
+            const=_Flags.PAN,
+        )
+        flag_group.add_argument(
+            "-n",
+            "--nb",
+            "--non-binary",
+            action="store_const",
+            dest="flag",
+            const=_Flags.NB,
+        )
+        flag_group.add_argument(
+            "--gq",
+            "--gender-queer",
+            action="store_const",
+            dest="flag",
+            const=_Flags.GQ,
+        )
+        flag_group.add_argument(
+            "--mlm",
+            action="store_const",
+            dest="flag",
+            const=_Flags.MLM,
+        )
+        flag_group.add_argument(
+            "--aro",
+            "--aromantic",
+            action="store_const",
+            dest="flag",
+            const=_Flags.ARO,
+        )
+        flag_group.add_argument(
+            "--poly",
+            "--polysexual",
+            action="store_const",
+            dest="flag",
+            const=_Flags.POLY,
+        )
+        flag_group.add_argument(
+            "--db",
+            "--demiboy",
+            action="store_const",
+            dest="flag",
+            const=_Flags.DEMIBOY,
+        )
+        flag_group.add_argument(
+            "--dg",
+            "--demigirl",
+            action="store_const",
+            dest="flag",
+            const=_Flags.DEMIGIRL,
+        )
+        flag_group.add_argument(
+            "--ag",
+            "--agender",
+            action="store_const",
+            dest="flag",
+            const=_Flags.AGENDER,
+        )
+        flag_group.add_argument(
+            "--bg",
+            "--bigender",
+            action="store_const",
+            dest="flag",
+            const=_Flags.BIGENDER,
+        )
+        flag_group.add_argument(
+            "--gf",
+            "--genderfluid",
+            action="store_const",
+            dest="flag",
+            const=_Flags.GENDERFLUID,
+        )
+        flag_group.add_argument(
+            "--abro",
+            "--abrosexual",
+            action="store_const",
+            dest="flag",
+            const=_Flags.ABRO,
+        )
+        flag_group.add_argument(
+            "--nt",
+            "--neut",
+            "--neutrois",
+            action="store_const",
+            dest="flag",
+            const=_Flags.NEUTROIS,
+        )
+        flag_group.add_argument(
+            "--tri",
+            "--trigender",
+            action="store_const",
+            dest="flag",
+            const=_Flags.TRIGENDER,
+        )
 
-    opt_group = parser.add_argument_group()
-    opt_group.add_argument(
-        "-c",
-        "--colour",
-        type=_ColourSpace,
-        choices=tuple(_ColourSpace),
-        default=colour_space,
-    )
-    opt_group.add_argument(
-        "-i",
-        "--interpolation",
-        type=_Gradient,
-        choices=tuple(_Gradient),
-        default=choice(tuple(_Gradient)),
-    )
-    opt_group.add_argument("--period", type=lambda i: max(abs(int(i)), 1))
-    opt_group.add_argument(
-        "--tabs", "--tab-width", type=lambda i: max(abs(int(i)), 1), default=4
-    )
+    with nullcontext(parser.add_argument_group()) as opt_group:
+        opt_group.add_argument(
+            "-c",
+            "--colour",
+            type=_ColourSpace,
+            choices=tuple(_ColourSpace),
+            default=colour_space,
+        )
+        opt_group.add_argument(
+            "-i",
+            "--interpolation",
+            type=_Gradient,
+            choices=tuple(_Gradient),
+            default=choice(tuple(_Gradient)),
+        )
+        opt_group.add_argument("--period", type=lambda i: max(abs(int(i)), 1))
+        opt_group.add_argument(
+            "--tabs", "--tab-width", type=lambda i: max(abs(int(i)), 1), default=4
+        )
 
     return parser.parse_args(namespace=namespace)
 
@@ -315,13 +318,20 @@ def _trap_sig() -> None:
         signal(SIGPIPE, SIG_DFL)
 
 
-def _stdin_stream() -> Iterator[str]:
+def _stdin_stream() -> Iterator[bytes]:
+    stream = cast(BufferedIOBase, stdin.buffer)
     while True:
-        line = stdin.read(DEFAULT_BUFFER_SIZE)
-        if line:
-            yield from line
+        buf = stream.raw.read(DEFAULT_BUFFER_SIZE)
+        if buf:
+            yield buf
         else:
             break
+
+
+def _stream(encoding: str) -> Iterator[str]:
+    s1 = _stdin_stream()
+    s2 = iterdecode(s1, encoding=encoding, errors="replace")
+    return chain.from_iterable(s2)
 
 
 def _normalize_width(tab_width: int, stream: Iterator[str]) -> Iterator[str]:
@@ -556,7 +566,7 @@ def _main() -> None:
             flag_stripes = _paint_flag(colour_space=args.colour, palette=palette)
             stdout.writelines(flag_stripes)
         else:
-            stream = _stdin_stream()
+            stream = _stream(args.encoding)
             normalized_stream = _normalize_width(args.tabs, stream)
 
             rgb_gen = _interpolation_for(
@@ -567,9 +577,7 @@ def _main() -> None:
                 rgb_gen=rgb_gen,
                 stream=normalized_stream,
             )
-            for chunk in gen:
-                stdout.write(chunk)
-                stdout.flush()
+            stdout.writelines(gen)
 
 
 try:
