@@ -313,9 +313,9 @@ def _parse_args() -> Namespace:
 
 def _trap_sig() -> None:
     if not _WINDOWS:
-        from signal import SIG_DFL, SIGPIPE, signal
+        from signal import Handlers, Signals, signal
 
-        signal(SIGPIPE, SIG_DFL)
+        signal(Signals.SIGPIPE, Handlers.SIG_DFL)
 
 
 def _stdin_stream() -> Iterator[bytes]:
