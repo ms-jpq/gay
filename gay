@@ -6,12 +6,13 @@ from contextlib import contextmanager, nullcontext
 from enum import Enum, auto
 from io import DEFAULT_BUFFER_SIZE, BufferedIOBase
 from itertools import chain, count, cycle, islice, repeat
+from locale import getpreferredencoding
 from math import pi, sin
 from os import environ, linesep
 from os import name as os_name
 from random import choice, randint
 from shutil import get_terminal_size
-from sys import getdefaultencoding, stderr, stdin, stdout
+from sys import stderr, stdin, stdout
 from typing import Callable, Iterator, Mapping, Optional, Sequence, Tuple, cast
 from unicodedata import east_asian_width
 
@@ -141,7 +142,7 @@ def _parse_args() -> Namespace:
     namespace = Namespace(flag=rand_flag)
 
     parser = ArgumentParser()
-    parser.add_argument("--encoding", default=getdefaultencoding())
+    parser.add_argument("--encoding", default=getpreferredencoding())
 
     with nullcontext(parser.add_argument_group()) as mode_group:
         mode_group.add_argument("-f", "--flag", dest="flag_only", action="store_true")
