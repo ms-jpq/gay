@@ -290,6 +290,7 @@ def _parse_args() -> Namespace:
         )
 
     with nullcontext(parser.add_argument_group()) as opt_group:
+        opt_group.add_argument("-u", "--unbuffered", action="store_true")
         opt_group.add_argument(
             "-c",
             "--colour",
@@ -578,7 +579,12 @@ def _main() -> None:
                 rgb_gen=rgb_gen,
                 stream=normalized_stream,
             )
-            stdout.writelines(gen)
+            if args.unbuffered:
+                for s in gen:
+                    stdout.write(s)
+                    stdout.flush()
+            else:
+                stdout.writelines(gen)
 
 
 try:
