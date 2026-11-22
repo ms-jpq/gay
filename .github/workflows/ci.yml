@@ -11,8 +11,6 @@ jobs:
     strategy:
       matrix:
         python_ver:
-          - "3.8"
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
@@ -22,9 +20,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python_ver }}
 
@@ -35,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
       - run: |-
           ./docker/ci.sh
@@ -44,9 +42,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v7
 
       - run: |-
           make release
